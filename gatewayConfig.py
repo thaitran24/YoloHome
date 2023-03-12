@@ -51,6 +51,8 @@ class gatewayConfig:
         # the new value.
         print("Feed {0} received new value: {1}".format(feed_id, payload))
 
+    def getData(self, feed_id):
+        return self.client.receive(feed_id)
     def getPort(self):
         ports = serial.tools.list_ports.comports()
         length = len(ports)
@@ -109,7 +111,8 @@ class gatewayConfig:
             value = self.getDataFromSerial()
             if (len(value)==3):
                 self.publishData()
-            
+
+
             time.sleep(15)
 
 if __name__ == "__main__":
