@@ -1,10 +1,11 @@
 import sys
 from Adafruit_IO import MQTTClient, Client
-
+import serial.tools.list_ports
 import random
 import time
 
 class gatewayConfig:
+    mess = ""
     def __init__(self, aio_username, aio_key) -> None:
         self.aio_username = aio_username
         self.aio_key = aio_key
@@ -16,7 +17,7 @@ class gatewayConfig:
         self.aio_feed_id = [f.key for f in self.client.feeds()]
 
         self.__callback()
-
+        self.ser = serial.Serial(port=self.getPort(), baudrate=115200)
     def __callback(self):
         """Connect the callback methods defined above to Adafruit IO"""
         self.mqttclient.on_connect = self.__connected
@@ -50,6 +51,37 @@ class gatewayConfig:
         # the new value.
         print("Feed {0} received new value: {1}".format(feed_id, payload))
 
+    def getPort(self):
+        ports = serial.tools.list_ports.comports()
+        length = len(ports)
+        commPort = "None"
+        for i in range(0, length):
+            port = ports[i]
+            strPort = str(port)
+            if "USB Serial Device" in strPort:
+                splitPort = strPort.split(" ")
+                commPort = (splitPort[0])
+        return commPort
+    def process(self, data):
+        data = data.replace("!", "")
+        data = data.replace("#", "")
+        splitData = data.split(":")
+        value = [splitData[1], splitData[3], splitData[5]]
+        return value
+
+    def getDataFromSerial(self):
+        bytesToRead = self.ser.inWaiting()
+        if (bytesToRead > 0):
+            self.mess = self.mess + self.ser.read(bytesToRead).decode("UTF-8")
+            while ("#" in self.mess) and ("!" in self.mess):
+                start = self.mess.find("!")
+                end = self.mess.find("#")
+                sensorValue = self.process(self.mess[start:end+1])
+                if (end==len(self.mess)):
+                    self.mess=""
+                else:
+                    self.mess = self.mess[end+1:]
+        return sensorValue
     def publishData(self):
         # Collect data and publish it to Adafruit Server
         data = []
@@ -74,7 +106,9 @@ class gatewayConfig:
 
         while True:
             # Send new message to Adafruit
-            self.publishData()
+            value = self.getDataFromSerial()
+            if (len(value)==3):
+                self.publishData()
             
             time.sleep(15)
 
