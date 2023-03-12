@@ -73,6 +73,7 @@ class gatewayConfig:
 
     def getDataFromSerial(self):
         bytesToRead = self.ser.inWaiting()
+        sensorValue = 0
         if (bytesToRead > 0):
             self.mess = self.mess + self.ser.read(bytesToRead).decode("UTF-8")
             while ("#" in self.mess) and ("!" in self.mess):
@@ -109,11 +110,11 @@ class gatewayConfig:
         while True:
             # Send new message to Adafruit
             value = self.getDataFromSerial()
-            if (len(value)==3):
+            if (len(value)==3): # temp, humi, lux
+                self.publishData()
+            if (len(value)==1):
                 self.publishData()
 
-
-            time.sleep(15)
 
 if __name__ == "__main__":
     print("Gateway Configuration Utility")
