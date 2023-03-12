@@ -6,6 +6,7 @@ import time
 
 class gatewayConfig:
     mess = ""
+    isYolobitConnected = False
     def __init__(self, aio_username, aio_key) -> None:
         self.aio_username = aio_username
         self.aio_key = aio_key
@@ -52,9 +53,19 @@ class gatewayConfig:
         # The feed_id parameter identifies the feed, and the payload parameter has
         # the new value.
         print("Feed {0} received new value: {1}".format(feed_id, payload))
-
-    def getDatatoSerial(self):
-        return [self.client.receive(feed) for feed in self.mapId(is_published=False)]
+        if self.isYolobitConnected:
+            if (feed_id=='yolohome-full.led1'):
+                self.ser.write(('L').encode())
+            elif (feed_id=='yolohome-nosensor.fan'):
+                self.ser.write(str(payload).encode())
+            elif (feed_id=='yolohome-nosensor.servo'):
+                self.ser.write(('D').encode())
+            elif (feed_id=='yolohome-full.led2'):
+                self.ser.write(('S').encode())
+        # return ['yolohome-full.led1',
+        #       'yolohome-nosensor.fan', 'yolohome-nosensor.servo']
+    # def getDatatoSerial(self):
+        # return [self.client.receive(feed) for feed in self.mapId(is_published=False)]
 
     def getData(self, feed_id):
         return self.client.receive(feed_id)
@@ -71,11 +82,20 @@ class gatewayConfig:
                 commPort = (splitPort[0])
         return commPort
 
+    def checkConnect(self):
+        if self.getPort() != "None":
+            self.ser = serial.Serial(port=self.getPort(), baudrate=115200)
+            self.isYolobitConnected = True
+
     def process(self, data):
         data = data.replace("!", "")
         data = data.replace("#", "")
         splitData = data.split(":")
-        value = [splitData[1], splitData[3], splitData[5]]
+        if (len(splitData)>3):
+            value = [splitData[1], splitData[3], splitData[5]]
+        else:
+            value = splitData[1]
+
         return value
 
     def getDataFromSerial(self):
@@ -117,14 +137,14 @@ class gatewayConfig:
                 self.mqttclient.publish(id, value)
 
     def mapId(self, is_published=True):
-        if is_published:
-            return ['yolohome-full.tempsensor', 'yolohome-full.humidsensor',
-                    'yolohome-full.led1', 'yolohome-full.momentumsensor',
-                    'yolohome-nosensor.fan', 'yolohome-nosensor.servo'
-                    'yolohome-full.lightsensor', 'yolohome-full.led2']
-        else:
-            return [ 'yolohome-full.led1', 'yolohome-full.led2',
-                     'yolohome-nosensor.fan', 'yolohome-nosensor.servo']
+        # if is_published:
+        return ['yolohome-full.tempsensor', 'yolohome-full.humidsensor',
+                'yolohome-full.led1', 'yolohome-full.momentumsensor',
+                'yolohome-nosensor.fan', 'yolohome-nosensor.servo'
+                'yolohome-full.lightsensor', 'yolohome-full.led2']
+        # else:
+        #     return [ 'yolohome-full.led1', 'yolohome-full.led2',
+        #              'yolohome-nosensor.fan', 'yolohome-nosensor.servo']
 
     def run(self):
         self.mqttclient.connect()
@@ -133,7 +153,7 @@ class gatewayConfig:
         while True:
             # Send new message to Adafruit
             value = self.getDataFromSerial()
-            if len(value) == 1: # Detect hooman
+            if len(value)==1: # Detect hooman
                 self.mqttclient.publish('yolohome-full.momentumsensor', 1)
             elif len(value)==3:
                 self.publishData(value)
