@@ -5,7 +5,6 @@ import random
 import time
 
 class gatewayConfig:
-    mess = ""
     def __init__(self, aio_username, aio_key) -> None:
         self.aio_username = aio_username
         self.aio_key = aio_key
@@ -17,14 +16,16 @@ class gatewayConfig:
         self.aio_feed_id = [f.key for f in self.client.feeds()]
 
         self.__callback()
+        self.mess = ""
         self.ser = serial.Serial(port=self.getPort(), baudrate=115200)
+
     def __callback(self):
         """Connect the callback methods defined above to Adafruit IO"""
         self.mqttclient.on_connect = self.__connected
         self.mqttclient.on_disconnect = self.__disconnected
         self.mqttclient.on_message = self.__message
         self.mqttclient.on_subscribe = self.__subscribe
-        self.mqttclient.on_unsubscribe = self.__unsubscribe
+        self.mqttclient._client.on_unsubscribe = self.__unsubscribe
 
     def __connected(self, client):
         # Connected function will be called when the client is connected to Adafruit IO.
@@ -36,9 +37,10 @@ class gatewayConfig:
         # This method is called when the client subscribes to a new feed.
         print("Subscribed to {0} with QOS level {1}".format(topic, granted_qos))
 
-    def __unsubscribe(self, client, userData, topic, pid):
+    def __unsubscribe(self, client, userData, mid):
         # This method is called when the client unsubscribes from a feed.
-        print("Unsubscribed from {0} with PID {1}".format(topic, pid))
+        print("Unsubscribed... {0} : {1}".format(userData, mid))
+        # print("Unsubscribed from {0} with PID {1}".format(topic, pid))
 
     def __disconnected(self, client):
         # Disconnected function will be called when the client disconnects.        
@@ -51,6 +53,9 @@ class gatewayConfig:
         # the new value.
         print("Feed {0} received new value: {1}".format(feed_id, payload))
 
+    def getDatatoSerial(self):
+        return [self.client.receive(feed) for feed in self.mapId(is_published=False)]
+
     def getPort(self):
         ports = serial.tools.list_ports.comports()
         length = len(ports)
@@ -62,6 +67,7 @@ class gatewayConfig:
                 splitPort = strPort.split(" ")
                 commPort = (splitPort[0])
         return commPort
+
     def process(self, data):
         data = data.replace("!", "")
         data = data.replace("#", "")
@@ -71,6 +77,7 @@ class gatewayConfig:
 
     def getDataFromSerial(self):
         bytesToRead = self.ser.inWaiting()
+        sensorValue = None
         if (bytesToRead > 0):
             self.mess = self.mess + self.ser.read(bytesToRead).decode("UTF-8")
             while ("#" in self.mess) and ("!" in self.mess):
@@ -82,23 +89,39 @@ class gatewayConfig:
                 else:
                     self.mess = self.mess[end+1:]
         return sensorValue
-    def publishData(self):
+
+    def publishData(self, value=None):
         # Collect data and publish it to Adafruit Server
-        data = []
 
-        value = random.randint(0, 100)
-        print('Update:', value)
+        if value is not None:
+            for id, value in zip(self.mapId(), value):
+                self.mqttclient.publish(id, value)
+        else:
+            data = []
 
-        data.append(value%5 * 25)           # Fan: 0, 25, 50, 75, 100
-        data.append(value%2)                # Servo: 0, 1
-        data.extend([value%2, (value+1)%2]) # led1, led2: 0, 1
-        data.append(value)                  # light sensor (0-100)
-        data.append(value)                  # humid sensor (0-100)
-        data.append(value)                  # temperature (0-100)
+            value = random.randint(0, 100)
+            print('Update:', value)
 
-        # Publish data with specific feed_id
-        for id, value in zip(self.aio_feed_id, data):
-            self.mqttclient.publish(id, value)        
+            data.append(value%5 * 25)           # Fan: 0, 25, 50, 75, 100
+            data.append(value%2)                # Servo: 0, 1
+            data.extend([value%2, (value+1)%2]) # led1, led2: 0, 1
+            data.append(value)                  # light sensor (0-100)
+            data.append(value)                  # humid sensor (0-100)
+            data.append(value)                  # temperature (0-100)
+
+            # Publish data with specific feed_id
+            for id, value in zip(self.aio_feed_id, data):
+                self.mqttclient.publish(id, value)
+
+    def mapId(self, is_published=True):
+        if is_published:
+            return ['yolohome-full.tempsensor', 'yolohome-full.humidsensor', 
+                    'yolohome-full.led1', 'yolohome-full.momentumsensor',
+                    'yolohome-nosensor.fan', 'yolohome-nosensor.servo'
+                    'yolohome-full.lightsensor', 'yolohome-full.led2']   
+        else:
+            return [ 'yolohome-full.led1', 'yolohome-full.led2', 
+                     'yolohome-nosensor.fan', 'yolohome-nosensor.servo']   
 
     def run(self):
         self.mqttclient.connect()
@@ -107,10 +130,28 @@ class gatewayConfig:
         while True:
             # Send new message to Adafruit
             value = self.getDataFromSerial()
-            if (len(value)==3):
-                self.publishData()
+            if len(value) == 1: # Detect hooman
+                self.mqttclient.publish('yolohome-full.momentumsensor', 1)
+            elif len(value)==3:
+                self.publishData(value)
             
-            time.sleep(15)
+
+            # Check if feed is registered or disabled 
+            new_aio_feed_id = [f.key for f in self.client.feeds()]
+
+            if set(new_aio_feed_id) != set(self.aio_feed_id):
+                new_feeds = [feed for feed in new_aio_feed_id if feed not in self.aio_feed_id]
+                old_feeds = [feed for feed in self.aio_feed_id if feed not in new_aio_feed_id]
+
+                for feed in old_feeds:
+                    print("Disconnected feed:", feed)
+                    self.mqttclient.unsubscribe(feed)
+                for feed in new_feeds:
+                    print("New feed:", feed)
+                    self.mqttclient.subscribe(feed)
+
+            self.aio_feed_id = new_aio_feed_id
+
 
 if __name__ == "__main__":
     print("Gateway Configuration Utility")
