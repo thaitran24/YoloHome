@@ -3,14 +3,13 @@ from Adafruit_IO import MQTTClient, Client
 import serial.tools.list_ports
 import random
 import time
-
 class gatewayConfig:
-    mess = ""
-    isYolobitConnected = False
+    # mess = ""
+
     def __init__(self, aio_username, aio_key) -> None:
         self.aio_username = aio_username
         self.aio_key = aio_key
-
+        self.isYolobitConnected = False
         self.client = Client(self.aio_username, self.aio_key)
         self.mqttclient = MQTTClient(self.aio_username, self.aio_key)
 
@@ -21,8 +20,8 @@ class gatewayConfig:
 
         self.__callback()
         self.mess = ""
-        # self.ser = serial.Serial(port=self.getPort(), baudrate=115200)
-
+        self.ser = serial.Serial(port=self.getPort(), baudrate=115200)
+        self.checkConnect()
     def __callback(self):
         """Connect the callback methods defined above to Adafruit IO"""
         self.mqttclient.on_connect = self.__connected
@@ -55,15 +54,20 @@ class gatewayConfig:
         # The feed_id parameter identifies the feed, and the payload parameter has
         # the new value.
         print("Feed {0} received new value: {1}".format(feed_id, payload))
+        print(self.isYolobitConnected)
+        # print(isinstance(payload, str))
         if self.isYolobitConnected:
             if (feed_id=='yolohome-full.led1'):
-                self.ser.write(('L').encode())
+                color_map = ['OFF', 'RED', 'YELLOW', 'BLUE']
+                print("lec 1")
+                self.ser.write(color_map[eval(payload)].encode("UTF-8"))
             elif (feed_id=='yolohome-nosensor.fan'):
-                self.ser.write(str(payload).encode())
+                self.ser.write(str(payload).encode("UTF-8"))
             elif (feed_id=='yolohome-nosensor.servo'):
-                self.ser.write(('D').encode())
-            elif (feed_id=='yolohome-full.led2'):
-                self.ser.write(('S').encode())
+                door_map = ['CLOSE-DOOR', 'OPEN-DOOR']
+                print(payload, isinstance(payload, str))
+
+                self.ser.write(door_map[eval(payload)].encode("UTF-8"))
         # return ['yolohome-full.led1',
         #       'yolohome-nosensor.fan', 'yolohome-nosensor.servo']
     # def getDatatoSerial(self):
@@ -79,14 +83,14 @@ class gatewayConfig:
         for i in range(0, length):
             port = ports[i]
             strPort = str(port)
-            if "USB Serial Device" in strPort:
+            if "USB-SERIAL CH340" in strPort:
                 splitPort = strPort.split(" ")
                 commPort = (splitPort[0])
         return commPort
 
     def checkConnect(self):
         if self.getPort() != "None":
-            self.ser = serial.Serial(port=self.getPort(), baudrate=115200)
+            # self.ser = serial.Serial(port=self.getPort(), baudrate=115200)
             self.isYolobitConnected = True
 
     def process(self, data):
@@ -113,6 +117,7 @@ class gatewayConfig:
                     self.mess=""
                 else:
                     self.mess = self.mess[end+1:]
+        # print("se")
         return sensorValue
 
     def publishData(self, value=None):
@@ -140,9 +145,9 @@ class gatewayConfig:
 
     def mapId(self):
         return ['yolohome-full.tempsensor', 'yolohome-full.humidsensor', 
-                'yolohome-full.led1', 'yolohome-full.momentumsensor',
+                'yolohome-full.lightsensor', 'yolohome-full.momentumsensor',
                 'yolohome-nosensor.fan', 'yolohome-nosensor.servo'
-                'yolohome-full.lightsensor', 'yolohome-full.led2']   
+                'yolohome-full.led1', 'yolohome-full.led2']
 
     def run(self):
         self.mqttclient.connect()
@@ -150,8 +155,8 @@ class gatewayConfig:
 
         while True:
             # Send new message to Adafruit
-            # value = self.getDataFromSerial()
-            value = genToyData()
+            value = self.getDataFromSerial()
+            # value = genToyData()
             if len(value) == 1 and value[0] == 1: # Detect hooman
                 print("THIEFFFFFFFF!!!!!")
                 self.mqttclient.publish('yolohome-full.momentumsensor', 1)
@@ -160,9 +165,12 @@ class gatewayConfig:
                 self.publishData(value)
             else:
                 print("No new data")
-
+            # self.ser.write('L'.encode("UTF-8"))
+            # self.ser.write('D'.encode("UTF-8"))
+            # self.ser.write('OPEN-DOOR'.encode("UTF-8"))
             # time.sleep(10)
-            
+
+            #
 
 
             # Check if feed is registered or disabled
