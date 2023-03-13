@@ -5,6 +5,8 @@ import random
 import time
 
 class gatewayConfig:
+    mess = ""
+    isYolobitConnected = False
     def __init__(self, aio_username, aio_key) -> None:
         self.aio_username = aio_username
         self.aio_key = aio_key
@@ -39,10 +41,9 @@ class gatewayConfig:
         # This method is called when the client subscribes to a new feed.
         print("Subscribed to {0} with QOS level {1}".format(topic, granted_qos))
 
-    def __unsubscribe(self, client, userData, mid):
+    def __unsubscribe(self, client, userData, topic, pid):
         # This method is called when the client unsubscribes from a feed.
-        print("Unsubscribed... {0} : {1}".format(userData, mid))
-        # print("Unsubscribed from {0} with PID {1}".format(topic, pid))
+        print("Unsubscribed from {0} with PID {1}".format(topic, pid))
 
     def __disconnected(self, client):
         # Disconnected function will be called when the client disconnects.        
@@ -54,6 +55,22 @@ class gatewayConfig:
         # The feed_id parameter identifies the feed, and the payload parameter has
         # the new value.
         print("Feed {0} received new value: {1}".format(feed_id, payload))
+        if self.isYolobitConnected:
+            if (feed_id=='yolohome-full.led1'):
+                self.ser.write(('L').encode())
+            elif (feed_id=='yolohome-nosensor.fan'):
+                self.ser.write(str(payload).encode())
+            elif (feed_id=='yolohome-nosensor.servo'):
+                self.ser.write(('D').encode())
+            elif (feed_id=='yolohome-full.led2'):
+                self.ser.write(('S').encode())
+        # return ['yolohome-full.led1',
+        #       'yolohome-nosensor.fan', 'yolohome-nosensor.servo']
+    # def getDatatoSerial(self):
+        # return [self.client.receive(feed) for feed in self.mapId(is_published=False)]
+
+    def getData(self, feed_id):
+        return self.client.receive(feed_id)
 
     def getPort(self):
         ports = serial.tools.list_ports.comports()
@@ -67,11 +84,20 @@ class gatewayConfig:
                 commPort = (splitPort[0])
         return commPort
 
+    def checkConnect(self):
+        if self.getPort() != "None":
+            self.ser = serial.Serial(port=self.getPort(), baudrate=115200)
+            self.isYolobitConnected = True
+
     def process(self, data):
         data = data.replace("!", "")
         data = data.replace("#", "")
         splitData = data.split(":")
-        value = [splitData[1], splitData[3], splitData[5]]
+        if (len(splitData)>3):
+            value = [splitData[1], splitData[3], splitData[5]]
+        else:
+            value = splitData[1]
+
         return value
 
     def getDataFromSerial(self):
@@ -138,7 +164,8 @@ class gatewayConfig:
             # time.sleep(10)
             
 
-            # Check if feed is registered or disabled 
+
+            # Check if feed is registered or disabled
             new_aio_feed_id = [f.key for f in self.client.feeds()]
 
             if set(new_aio_feed_id) != set(self.aio_feed_id):
