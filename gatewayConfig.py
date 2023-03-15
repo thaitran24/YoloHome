@@ -66,7 +66,6 @@ class gatewayConfig:
             elif (feed_id=='yolohome-nosensor.servo'):
                 door_map = ['CLOSE-DOOR', 'OPEN-DOOR']
                 print(payload, isinstance(payload, str))
-
                 self.ser.write(door_map[eval(payload)].encode("UTF-8"))
         # return ['yolohome-full.led1',
         #       'yolohome-nosensor.fan', 'yolohome-nosensor.servo']
