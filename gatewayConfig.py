@@ -4,7 +4,6 @@ import serial.tools.list_ports
 import random
 import time
 class gatewayConfig:
-    # mess = ""
 
     def __init__(self, aio_username, aio_key) -> None:
         self.aio_username = aio_username
@@ -19,7 +18,7 @@ class gatewayConfig:
         print(self.aio_feed_id)
 
         self.__callback()
-        self.mess = ""
+        # self.mess = ""
         self.ser = serial.Serial(port=self.getPort(), baudrate=115200)
         self.checkConnect()
     def __callback(self):
@@ -99,24 +98,26 @@ class gatewayConfig:
         if (len(splitData)>3):
             value = [splitData[1], splitData[3], splitData[5]]
         else:
-            value = splitData[1]
+            value = [splitData[1]]
 
         return value
 
     def getDataFromSerial(self):
         bytesToRead = self.ser.inWaiting()
         sensorValue = []
+        mess = ""
         if (bytesToRead > 0):
-            self.mess = self.mess + self.ser.read(bytesToRead).decode("UTF-8")
-            while ("#" in self.mess) and ("!" in self.mess):
-                start = self.mess.find("!")
-                end = self.mess.find("#")
-                sensorValue = self.process(self.mess[start:end+1])
-                if (end==len(self.mess)):
-                    self.mess=""
+            mess = mess + self.ser.read(bytesToRead).decode("UTF-8")
+            while ("#" in mess) and ("!" in mess):
+                start = mess.find("!")
+                end = mess.find("#")
+                sensorValue = self.process(mess[start:end+1])
+                if (end==len(mess)):
+                    mess=""
                 else:
-                    self.mess = self.mess[end+1:]
+                    mess = mess[end+1:]
         # print("se")
+        print(sensorValue)
         return sensorValue
 
     def publishData(self, value=None):
@@ -156,7 +157,7 @@ class gatewayConfig:
             # Send new message to Adafruit
             value = self.getDataFromSerial()
             # value = genToyData()
-            if len(value) == 1 and value[0] == 1: # Detect hooman
+            if len(value) == 1 and value[0] == '1': # Detect hooman
                 print("THIEFFFFFFFF!!!!!")
                 self.mqttclient.publish('yolohome-full.momentumsensor', 1)
             elif len(value)==3:
