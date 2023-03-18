@@ -1,0 +1,1 @@
+import StaticsScreen from "./StaticsScreen";
