@@ -9,6 +9,8 @@ class DeviceModel():
     def update_device_data(self, device_id, data):
         try:
             device_list = self.get_device(device_id)
+            if len(device_list) < 1:
+                raise RecordNotFound(device_id)
             device = device_list[0]
             update_data = {"curr_value": data}
             self._database.update_one_data(device, update_data)
@@ -16,23 +18,35 @@ class DeviceModel():
             raise RecordUpdateError(device_id)
         return device
 
-    def get_device(self, device_id=None):
+    def get_device(self, device_id=None, include_log=False, room_id=None, home_id=None):
         query = {}
         if device_id:
             query["_id"] = device_id
+        if room_id:
+            query["room_id"] = room_id
+        if home_id:
+            query["home_id"] = home_id
+            
         try:
-            device_list = self._database.fetch_data(config.database.DOC_DEVICE_LIST, query)
-            if len(device_list) < 1:
-                raise RecordFindError(device_id)
+            if include_log:
+                device_list = self._database.fetch_data(config.database.DOC_DEVICE_LIST, query)
+            else:
+                device_list = self._database.fetch_device_info(config.database.DOC_DEVICE_LIST, query)
         except:
             raise RecordFindError(device_id)
+        
+        if device_id and len(device_list) < 1:
+            raise RecordNotFound(device_id)
         
         return device_list
 
     def add_device(self, record):
-        home_id = record['home_id']
-        room_id = record['room_id']
-        device_type = record['type']
+        try:
+            home_id = record['home_id']
+            room_id = record['room_id']
+            device_type = record['type']
+        except:
+            raise LackRequestData()
         device = Device(type=device_type, home_id=home_id, room_id=room_id)
         try:
             self._database.add_data(device)
@@ -44,6 +58,8 @@ class DeviceModel():
     def delete_device(self, device_id):
         try:
             device_list = self.get_device(device_id)
+            if len(device_list) < 1:
+                raise RecordNotFound(device_id)
             device = device_list[0]
             self._database.remove_data(device)
         except:

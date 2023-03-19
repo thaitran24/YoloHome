@@ -197,6 +197,22 @@ class Device():
                 self.data[k].update(load_data[k])
             elif k in load_data.keys():
                 self.data[k] = load_data[k]
+    
+    def load_info(self, 
+                  load_data : dict):
+        
+        """Load a data dictionary to object"""
+        try:
+            self.data["_id"] = load_data["_id"]
+            self.data["type"] = load_data["type"]
+            self.data["curr_state"] = load_data["curr_state"]
+            self.data["curr_value"] = load_data["curr_value"]
+            self.data["home_id"] = load_data["home_id"]
+            self.data["room_id"] = load_data["room_id"]
+        except:
+            message = "Field is not available in the loading data!"
+            raise OperationFailed(message)
+
 
     def show(self):
         return self.data

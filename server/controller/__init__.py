@@ -1,4 +1,4 @@
-from controller.device import SingleDeviceAPI, MultiDeviceAPI
-from controller.home import SingleHomeAPI, MultiHomeAPI
-from controller.room import SingleRoomAPI, MultiRoomAPI
-from controller.login import LoginAPI
+from controller.device import *
+from controller.login import *
+from controller.home import *
+from controller.room import *
