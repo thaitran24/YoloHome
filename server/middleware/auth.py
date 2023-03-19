@@ -5,6 +5,8 @@ from functools import wraps
 from flask import request, jsonify
 from error import *
 import config 
+from controller.response import create_response
+from model import user_model
 
 def token_require(f):
     @wraps(f)
@@ -13,17 +15,20 @@ def token_require(f):
         if 'access-token' in request.headers:
             token = request.headers['access-token']
         if not token:
-            return make_response(data="", status=401, message="Token is missing")
+            return create_response('', Unauthorized())
         try:
-            data = jwt.decode(token, os.getenv['SECRET_KEY'])
-            query = {"public_id": data['public_id']}
-            current_user = iot_database.fetch_data(config.database.DOC_USER_LIST, query)
-            print(token)
-        except:
-            return jsonify({
-                'message' : 'Token is invalid !!'
-            }), 401
+            data = jwt.decode(token, config.server.SECRET_KEY, algorithms=['HS256'])
+        except Exception as err:
+            return create_response('', Unauthorized("Invalid token"))
         
-        return f(current_user, *args, **kwargs)
+        try:
+            user_id = data['public_id']
+            user_list = user_model.get_user(user_id=user_id)
+        except Exception as err:
+            if type(err) == RecordNotFound:
+                return create_response('', Unauthorized("Invalid token"))
+            return create_response('', err)
+            
+        return f(*args, **kwargs)
   
     return decorator

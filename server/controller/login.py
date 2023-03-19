@@ -5,55 +5,69 @@ import config
 from functools import wraps
 from datetime import datetime, timedelta
 from flask_restful import Resource
-from flask import Blueprint, request, make_response, jsonify
+from flask import Blueprint, request, jsonify
 from middleware import token_require
 from database import iot_database
-from  werkzeug.security import generate_password_hash, check_password_hash
+from model import user_model
+from werkzeug.security import generate_password_hash, check_password_hash
+from controller.response import create_response
+from error import *
 
 class LoginAPI(Resource):
-    def get(self):
-        pass
-
-    @token_require
     def post(self):
-        record = json.loads(request.data.decode('UTF-8'))
-        print(record['username'], record['password'])
-        if not record or not record.get('username') or not record.get('password'):
-            return make_response(
-                'Could not verify',
-                401,
-                {'WWW-Authenticate' : 'Basic realm ="Login required !!"'}
-            )
-
-        query = {"username": record['username']}
-        user_list = iot_database.fetch_data(config.database.DOC_USER_LIST, query)
-
-        if len(user_list) < 1:
-            return make_response(
-                'Could not verify',
-                401,
-                {'WWW-Authenticate' : 'Basic realm ="User does not exist !!"'}
-            )
+        # record = json.loads(request.data.decode('UTF-8'))
+        record = request.form.to_dict()
+        try:
+            username = record['username']
+            password = record['password']
+        except:
+            return create_response('', LackRequestData())     
+        
+        try:
+            user_list = user_model.get_user(username=username)
+        except Exception as err:
+            return create_response('', err)
         
         user = user_list[0]
 
-        if check_password_hash(user.password, record.get('password')):
+        # if check_password_hash(user.data['password'], password):
+        if user.data['password'] == password:
             token = jwt.encode({
-                'public_id': user.public_id,
+                'public_id': user.data['_id'],
                 'exp' : datetime.utcnow() + timedelta(minutes = 30)
             }, config.server.SECRET_KEY)
-    
-            return make_response(jsonify({'token' : token.decode('UTF-8')}), 201)
+            return create_response(data=user.data, token=token, code=201)
 
-        return make_response(
-            'Could not verify',
-            403,
-            {'WWW-Authenticate' : 'Basic realm ="Wrong Password !!"'}
-        )
+        return create_response('', AccessForbidden("Login not successful"))
 
-    def put(self):
-        pass
+class UserAPI(Resource):
+    @token_require
+    def get(self, user_id):
+        try:
+            user_list = user_model.get_user(user_id)
+        except Exception as err:
+            return create_response('', err)
+        data = [user.data for user in user_list]
+        return create_response(data)
 
-    def delete(self):
-        pass
+    @token_require
+    def delete(self, user_id):
+        # record = json.loads(request.data.decode('UTF-8'))
+        try:
+            user = user_model.delete_user(user_id)
+        except Exception as err:
+            return create_response('', err)
+        
+        return create_response(user.data)
 
+class SignupAPI(Resource):
+    @token_require
+    def post(self):
+        # record = json.loads(request.data.decode('UTF-8'))
+        record = request.form.to_dict()        
+        try:
+            user = user_model.add_user(record)
+        except Exception as err:
+            return create_response('', err)
+        
+        return create_response(user.data)

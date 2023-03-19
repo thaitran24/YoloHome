@@ -81,6 +81,23 @@ class Database():
             result.append(res)
         return result
 
+    def fetch_device_info(self, 
+                  collection,
+                  query = {}):
+        object = self.mapping[collection]
+        result = []
+        found_data = self._find_data(collection, query)
+
+        for data in found_data:
+            if (object == Device):
+                res = object(data["type"])
+            else:
+                res = object()
+
+            res.load_info(data)
+            result.append(res)
+        return result
+
     def _find_data(self, 
                    collection, 
                    query):
