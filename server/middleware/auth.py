@@ -3,6 +3,8 @@ import jwt
 from database import iot_database
 from functools import wraps
 from flask import request, jsonify
+from error import *
+import config 
 
 def token_require(f):
     @wraps(f)
@@ -11,10 +13,12 @@ def token_require(f):
         if 'access-token' in request.headers:
             token = request.headers['access-token']
         if not token:
-            return jsonify({'message' : 'Token is missing'}), 401
+            return make_response(data="", status=401, message="Token is missing")
         try:
             data = jwt.decode(token, os.getenv['SECRET_KEY'])
-            current_user = iot_database._find_data('', '')
+            query = {"public_id": data['public_id']}
+            current_user = iot_database.fetch_data(config.database.DOC_USER_LIST, query)
+            print(token)
         except:
             return jsonify({
                 'message' : 'Token is invalid !!'

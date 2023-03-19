@@ -1,3 +1,4 @@
+import json
 from flask import request
 from flask_restful import Resource
 from database import iot_database
@@ -20,7 +21,8 @@ class MultiDeviceAPI(Resource):
         return make_response(data=data)
 
     def post(self):
-        record = request.form.to_dict()
+        # record = request.form.to_dict()
+        record = json.loads(request.data.decode('UTF-8'))['form']
         try:
             device = self._device_model.add_device(record)
         except Exception as err:
@@ -47,16 +49,25 @@ class SingleDeviceAPI(Resource):
         return make_response(data=device.data)
 
     def put(self, device_id):
-        record = request.form.to_dict()
-        data = record['data']
+        # record = request.form.to_dict()
+        # data = record['data']
+        record = json.loads(request.data.decode('UTF-8'))
         try:
-            device = self._device_model.update_device_data(device_id, data)
+            device_list = self._device_model.get_device(device_id)
+            device = device_list[0]
         except Exception as err:
             return make_response(data="", error=err)
         
         group_key = device.data["home_id"]
         feed_key = device.data["_id"]
-        adafruit_server.send_data(feed_key="{}.{}".format(group_key, feed_key), data=data)
+        adafruit_server.send_data(feed_key="{}.{}".format(group_key, feed_key), data=record['data'])
+        
+        try:
+            device_list = self._device_model.get_device(device_id)
+            device = device_list[0]
+        except Exception as err:
+            return make_response(data="", error=err)
+        
         return make_response(data=device.data)
     
     def delete(self, device_id):

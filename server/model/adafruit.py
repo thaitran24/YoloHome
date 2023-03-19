@@ -113,6 +113,6 @@ class MQTTDataHandler():
     
     def save(self, userdata, payload):
         home_id, device_id = self._feed_parse(userdata)
-        data = payload.encode('utf-8')
+        data = str(payload)
         return self._device_model.update_device_data(device_id, data)
 

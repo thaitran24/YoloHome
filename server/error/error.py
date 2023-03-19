@@ -26,7 +26,7 @@ class RecordInsertError(Exception):
         self.message = "Cannot add record {} in database".format(record)
         super().__init__(self.message)
 
-def make_response(data, error=None):
+def make_response(data, error=None, status=200, message="OK"):
     if error:
         err = {
             "type": error.type,
@@ -36,8 +36,6 @@ def make_response(data, error=None):
         message = "Internal Server Error"
     else:
         err = {}
-        status = 200
-        message = "OK"
     
     response = {
         "status": status,
@@ -45,4 +43,4 @@ def make_response(data, error=None):
         "data": data,
         "errors": err
     }
-    return response
+    return response, status

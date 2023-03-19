@@ -1,3 +1,4 @@
+import json
 from flask import request
 from flask_restful import Resource
 from database import iot_database
@@ -19,7 +20,8 @@ class MultiHomeAPI(Resource):
         return make_response(data=data)
 
     def post(self):
-        record = request.form.to_dict()
+        # record = request.form.to_dict()
+        record = json.loads(request.data.decode('UTF-8'))['form']
         try:
             home = self._home_model.add_home(record)
         except Exception as err:

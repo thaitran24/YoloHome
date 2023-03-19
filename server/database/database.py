@@ -106,8 +106,8 @@ class Database():
 
     def _update_data(self, 
                      collection, 
-                     query, 
                      data, 
+                     query, 
                      mode = "first"):
         data = {"$set": data}
         if mode == "first":
