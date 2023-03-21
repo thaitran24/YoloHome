@@ -1,1 +1,0 @@
-import CustomSlider from "./Slider";

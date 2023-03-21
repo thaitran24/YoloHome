@@ -1,8 +1,8 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import HomeScreenStack from "../screen/HomeScreen";
-import StaticsScreen from "../screen/StaticsScreen/StaticsScreen";
-import AntiTheftScreen from "../screen/AntiTheftScreen/AntiTheftScreen";
-import SettingsScreen from "../screen/SettingsScreen/SettingsScreen";
+import StaticsScreen from "../screen/StaticsScreen";
+import AntiTheftScreen from "../screen/AntiTheftScreen";
+import SettingsScreen from "../screen/SettingsScreen";
 import { MaterialCommunityIcons } from "react-native-vector-icons";
 
 import { getFocusedRouteNameFromRoute } from "@react-navigation/native";

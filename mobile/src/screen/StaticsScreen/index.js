@@ -1,1 +1,1 @@
-import StaticsScreen from "./StaticsScreen";
+export { default } from "./StaticsScreen";

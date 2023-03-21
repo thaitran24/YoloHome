@@ -12,11 +12,12 @@ import { MaterialCommunityIcons } from "react-native-vector-icons";
 
 import axios from "axios";
 
-// const baseURL = "http://10.230.182.70:5000";
-const baseURL = "http://192.168.1.13:5001";
+import { AuthContext } from "../../context/AuthProvider";
+import { baseURL } from "../../../env";
 
 export default function HomeScreen({ navigation }) {
-  const home_id = "home00000";
+  const { userInfo, userToken } = useContext(AuthContext);
+
   const [room, setRoom] = useState([]);
 
   useEffect(() => {
@@ -28,16 +29,20 @@ export default function HomeScreen({ navigation }) {
 
   const fetchRoom = () => {
     axios
-      .get(`${baseURL}/api/room`, {})
+      .get(`${baseURL}/api/v1/room`, {
+        headers: {
+          "access-token": userToken,
+        },
+      })
       .then(function (response) {
         // handle success
+
         setRoom(
-          response.data.data.filter(function (data) {
-            return data.home_id == home_id;
+          response.data.data.filter(function (item) {
+            return item.home_id == userInfo.data.home_id;
           })
         );
-        // console.log(data);
-        console.log("Home: Successful!");
+        console.log("Home: fetch Successful!");
       })
       .catch(function (error) {
         // handle error
@@ -59,7 +64,6 @@ export default function HomeScreen({ navigation }) {
             onPress={() =>
               navigation.navigate("Room", {
                 room_id: item._id,
-                home_id: item.home_id,
                 name: item.name,
               })
             }

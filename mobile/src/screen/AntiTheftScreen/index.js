@@ -1,1 +1,2 @@
-import AntiTheftScreen from "./AntiTheftScreen";
+// import AntiTheftScreen from "./AntiTheftScreen";
+export { default } from "./AntiTheftScreen";

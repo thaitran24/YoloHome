@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { useRoute } from "@react-navigation/native";
 import axios from "axios";
 
@@ -12,13 +12,15 @@ import {
 } from "react-native";
 import { MaterialCommunityIcons } from "react-native-vector-icons";
 
-import TouchableGrid from "../../components/TouchableGrid/TouchableGrid";
+import { AuthContext } from "../../context/AuthProvider";
+import { baseURL } from "../../../env";
 
-const baseURL = "http://192.168.1.13:5001";
-// const baseURL = "http://10.230.182.70:5000";
+import { screenMap } from "../../utils/ObjectMap";
 
 export default function RoomScreen({ navigation }) {
-  const [data, setData] = useState([]);
+  const { userInfo, userToken } = useContext(AuthContext);
+
+  const [roomInfo, setRoomInfo] = useState([]);
 
   const route = useRoute();
 
@@ -31,19 +33,22 @@ export default function RoomScreen({ navigation }) {
 
   const fetchDevice = () => {
     axios
-      .get(`${baseURL}/api/device`, {})
+      .get(`${baseURL}/api/v1/device`, {
+        headers: {
+          "access-token": userToken,
+        },
+      })
       .then(function (response) {
         // handle success
-        setData(
+        setRoomInfo(
           response.data.data.filter(function (data) {
             return (
-              data.home_id == route.params.home_id &&
+              data.home_id == userInfo.data.home_id &&
               data.room_id == route.params.room_id
             );
           })
         );
-        console.log("Room: Successful!");
-        // console.log(data);
+        console.log("Room: Fetch Successful!");
       })
       .catch(function (error) {
         // handle error
@@ -51,41 +56,10 @@ export default function RoomScreen({ navigation }) {
       });
   };
 
-  const screenMap = {
-    fan: {
-      type: "Interactive",
-      icon: "fan",
-    },
-    door: {
-      type: "Interactive",
-      icon: "door",
-    },
-    led: {
-      type: "Interactive",
-      icon: "lightbulb-multiple-outline",
-    },
-    "temp-sensor": {
-      type: "Measure",
-      icon: "thermometer-low",
-    },
-    "light-sensor": {
-      type: "Measure",
-      icon: "alarm-light-outline",
-    },
-    "humid-sensor": {
-      type: "Measure",
-      icon: "water-percent",
-    },
-    "movement-sensor": {
-      type: "Measure",
-      icon: "run-fast",
-    },
-  };
-
   return (
     <SafeAreaView style={styles.container}>
       <FlatList
-        data={data}
+        data={roomInfo}
         style={styles.list}
         numColumns={2}
         showsVerticalScrollIndicator={false}
@@ -94,7 +68,7 @@ export default function RoomScreen({ navigation }) {
           <TouchableOpacity
             style={styles.card}
             onPress={() =>
-              navigation.navigate(screenMap[item.type].type + "Device", {
+              navigation.navigate(`${screenMap[item.type].type}Device`, {
                 device_id: item._id,
                 curr_value: item.curr_value,
                 type: item.type,

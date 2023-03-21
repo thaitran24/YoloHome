@@ -1,10 +1,22 @@
-import React from "react";
+import React, { useContext } from "react";
 import { View, Text, StyleSheet } from "react-native";
 
+import { AuthContext } from "../../context/AuthProvider";
+
+import CustomButton from "../../components/CustomButton";
+
 export default function SettingsScreen() {
+  const { signOut } = useContext(AuthContext);
+
+  const signOutPressed = () => {
+    signOut();
+  };
+
   return (
     <View style={styles.container}>
-      <Text>This is Settings Screen</Text>
+      <View>
+        <CustomButton text={"Log Out"} onPress={signOutPressed} />
+      </View>
     </View>
   );
 }

@@ -1,13 +1,21 @@
-import React, { useState, useEffect } from "react";
-import { View, SafeAreaView, Text, StyleSheet } from "react-native";
+import React, { useState, useEffect, useContext } from "react";
+import { View, SafeAreaView, Text, StyleSheet, FlatList } from "react-native";
 import { useRoute } from "@react-navigation/native";
 import axios from "axios";
 
 import { Slider } from "@miblanchard/react-native-slider";
 
-const baseURL = "http://192.168.1.13:5001";
+import { AuthContext } from "../../context/AuthProvider";
+
+import { baseURL } from "../../../env";
+
+import CustomButton from "../../components/CustomButton";
+
+import { deviceMode } from "../../utils/ObjectMap";
 
 export default function InteractiveDeviceScreen() {
+  const { userToken } = useContext(AuthContext);
+
   const route = useRoute();
   const [value, setValue] = useState(route.params.curr_value);
 
@@ -15,15 +23,19 @@ export default function InteractiveDeviceScreen() {
     putData();
   }, [value]);
 
+  const form = new FormData();
+  form.append("data", value);
+
   const putData = () => {
     axios
-      .put(`${baseURL}/api/device/${route.params.device_id}`, {
-        data: value[0],
+      .put(`${baseURL}/api/v1/device/${route.params.device_id}`, form, {
+        headers: {
+          "access-token": userToken,
+        },
       })
-      // .get(`${baseURL}/api/device`, {})
       .then(function (response) {
         // handle success
-        console.log("InteractiveDevice: Successful!");
+        console.log("InteractiveDevice: Send Data Successful!");
       })
       .catch(function (error) {
         // handle error
@@ -31,52 +43,26 @@ export default function InteractiveDeviceScreen() {
       });
   };
 
-  const deviceMap = {
-    fan: {
-      minValue: 0,
-      maxValue: 100,
-      stepValue: 25,
-      key: {
-        0: "Off",
-        25: "25%",
-        50: "50%",
-        75: "75%",
-        100: "100%",
-      },
-    },
-    led: {
-      minValue: 0,
-      maxValue: 3,
-      stepValue: 1,
-      key: {
-        0: "Off",
-        1: "Red",
-        2: "Yellow",
-        3: "Blue",
-      },
-    },
-    door: {
-      minValue: 0,
-      maxValue: 1,
-      stepValue: 1,
-      key: {
-        0: "Closed",
-        1: "Opened",
-      },
-    },
-  };
   return (
     <View style={styles.container}>
-      <Text style={styles.value}>
-        {deviceMap[route.params.type].key[value]}
-      </Text>
-      <View style={styles.slider}>
-        <Slider
-          value={value}
-          onValueChange={setValue}
-          minimumValue={deviceMap[route.params.type].minValue}
-          maximumValue={deviceMap[route.params.type].maxValue}
-          step={deviceMap[route.params.type].stepValue}
+      <View style={styles.listContainer}>
+        <FlatList
+          data={deviceMode[route.params.type]}
+          contentContainerStyle={styles.listContent}
+          numColumns={2}
+          scrollEnabled={false}
+          keyExtractor={(item) => item.key}
+          renderItem={({ item }) => (
+            <CustomButton
+              text={item.key}
+              onPress={() => {
+                setValue(item.value);
+                console.log("Sending", item.value, "...");
+              }}
+              bgColor={item.color}
+              type={"ROUND"}
+            />
+          )}
         />
       </View>
     </View>
@@ -88,22 +74,17 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    // padding: 10,
-    // margin: 10,
-    backgroundColor: "#cccccc",
-    // width: "100%",
   },
-  value: {
-    justifyContent: "center",
+  listContainer: {
+    flex: 1,
+    width: "100%",
+  },
+  listContent: {
+    flex: 1,
+    width: "100%",
+    height: "100%",
     alignItems: "center",
-    fontSize: 30,
-  },
-  slider: {
-    // flex: 1,
-    marginLeft: 10,
-    marginRight: 10,
-    alignItems: "stretch",
     justifyContent: "center",
-    width: 300,
+    alignContent: "center",
   },
 });
