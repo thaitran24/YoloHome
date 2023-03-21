@@ -56,15 +56,19 @@ class gatewayConfig:
         print(self.isYolobitConnected)
         # print(isinstance(payload, str))
         if self.isYolobitConnected:
-            if (feed_id=='yolohome-full.led1'):
+            # if (feed_id=='yolohome-full.led1'):
+            if (feed_id =='home00000.led00000'):
                 color_map = ['OFF', 'RED', 'YELLOW', 'BLUE']
-                print("lec 1")
+                print(color_map[eval(payload)].encode("UTF-8"))
                 self.ser.write(color_map[eval(payload)].encode("UTF-8"))
-            elif (feed_id=='yolohome-nosensor.fan'):
+            # elif (feed_id=='yolohome-nosensor.fan'):
+            elif (feed_id =='home00000.fan00000'):
                 self.ser.write(str(payload).encode("UTF-8"))
-            elif (feed_id=='yolohome-nosensor.servo'):
+            #elif (feed_id=='yolohome-nosensor.servo'):
+            elif (feed_id == 'home00000.door00000'):
                 door_map = ['CLOSE-DOOR', 'OPEN-DOOR']
-                print(payload, isinstance(payload, str))
+                # print(payload, isinstance(payload, str))
+                print(door_map[eval(payload)].encode("UTF-8"))
                 self.ser.write(door_map[eval(payload)].encode("UTF-8"))
         # return ['yolohome-full.led1',
         #       'yolohome-nosensor.fan', 'yolohome-nosensor.servo']
@@ -144,11 +148,13 @@ class gatewayConfig:
                 self.mqttclient.publish(id, value)
 
     def mapId(self):
-        return ['yolohome-full.tempsensor', 'yolohome-full.humidsensor', 
-                'yolohome-full.lightsensor', 'yolohome-full.momentumsensor',
-                'yolohome-nosensor.fan', 'yolohome-nosensor.servo'
-                'yolohome-full.led1', 'yolohome-full.led2']
-
+        # return ['yolohome-full.tempsensor', 'yolohome-full.humidsensor',
+        #         'yolohome-full.lightsensor', 'yolohome-full.momentumsensor',
+        #         'yolohome-nosensor.fan', 'yolohome-nosensor.servo'
+        #         'yolohome-full.led1', 'yolohome-full.led2']
+        return ['home00000.temp-sensor00000', 'home00000.humid-sensor00000',
+                'home00000.light-sensor00000', 'home00000.movement-sensor00000',
+                'home00000.fan00000', 'home00000.door00000', 'home00000.led00000']
     def run(self):
         self.mqttclient.connect()
         self.mqttclient.loop_background()
@@ -159,7 +165,7 @@ class gatewayConfig:
             # value = genToyData()
             if len(value) == 1 and value[0] == '1': # Detect hooman
                 print("THIEFFFFFFFF!!!!!")
-                self.mqttclient.publish('yolohome-full.momentumsensor', 1)
+                self.mqttclient.publish('home00000.movement-sensor00000', 1)
             elif len(value)==3:
                 print("Sensor datas")
                 self.publishData(value)
