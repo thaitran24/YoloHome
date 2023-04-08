@@ -81,7 +81,8 @@ class User():
 
 class Device():
     def __init__(self,
-                 type : str, 
+                 type : str,
+                 name : str = None,
                  room_id : str = None,
                  home_id : str = None,                   
                  curr_state : bool = None,              #0: inactive, 1: active
@@ -99,9 +100,16 @@ class Device():
         now = datetime.now()
         dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
 
+        if not name:
+            names = type.split('-')
+            name = ''
+            for n in names:
+                name += n.capitalize() + ' '
+
         self.data = {
             "_id" : self.feed_id,
             "type" : type,
+            "name" : name,
             "room_id" : room_id,
             "home_id" : home_id,
             "states" : {} if curr_state is None else {dt_string : curr_state},
@@ -205,6 +213,7 @@ class Device():
         try:
             self.data["_id"] = load_data["_id"]
             self.data["type"] = load_data["type"]
+            self.data["name"] = load_data["name"]
             self.data["curr_state"] = load_data["curr_state"]
             self.data["curr_value"] = load_data["curr_value"]
             self.data["home_id"] = load_data["home_id"]

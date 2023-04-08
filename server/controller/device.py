@@ -86,7 +86,6 @@ class MultiDeviceAPI(Resource):
 
     @token_require
     def post(self): 
-        # record = json.loads(request.data.decode('UTF-8'))['form']
         record = request.form.to_dict()
         try:
             device = device_model.add_device(record)
@@ -117,7 +116,6 @@ class SingleDeviceAPI(Resource):
 
     @token_require
     def put(self, device_id):
-        # record = json.loads(request.data.decode('UTF-8'))
         record = request.form.to_dict()
         try:
             device_list = device_model.get_device(device_id)

@@ -15,8 +15,8 @@ from error import *
 
 class LoginAPI(Resource):
     def post(self):
-        # record = json.loads(request.data.decode('UTF-8'))
         record = request.form.to_dict()
+        print(record)
         try:
             username = record['username']
             password = record['password']
@@ -29,12 +29,12 @@ class LoginAPI(Resource):
             return create_response('', err)
         
         user = user_list[0]
-
+        print(user.data)
         # if check_password_hash(user.data['password'], password):
         if user.data['password'] == password:
             token = jwt.encode({
                 'public_id': user.data['_id'],
-                'exp' : datetime.utcnow() + timedelta(minutes = 30)
+                'exp' : datetime.utcnow() + timedelta(minutes=90)
             }, config.server.SECRET_KEY)
             return create_response(data=user.data, token=token, code=201)
 
@@ -52,9 +52,23 @@ class UserAPI(Resource):
 
     @token_require
     def delete(self, user_id):
-        # record = json.loads(request.data.decode('UTF-8'))
         try:
             user = user_model.delete_user(user_id)
+        except Exception as err:
+            return create_response('', err)
+        
+        return create_response(user.data)
+    
+    @token_require
+    def put(self, user_id):
+        record = request.form.to_dict()
+        try:
+            home_id = record["home_id"]
+        except:
+            return create_response('', LackRequestData())
+        
+        try:
+            user = user_model.update_user_home(user_id, home_id)
         except Exception as err:
             return create_response('', err)
         
@@ -63,7 +77,6 @@ class UserAPI(Resource):
 class SignupAPI(Resource):
     @token_require
     def post(self):
-        # record = json.loads(request.data.decode('UTF-8'))
         record = request.form.to_dict()        
         try:
             user = user_model.add_user(record)

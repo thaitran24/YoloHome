@@ -17,6 +17,9 @@ Post API here require:
 #### DELETE API
 - `/api/v1/user/<user_id>`: delete user by id
 
+#### PUT API
+- `/api/v1/user/<user_id>`: update user home
+
 ## Device
 #### GET API:
 - `/api/v1/device/<device_id>`: get device by ID
