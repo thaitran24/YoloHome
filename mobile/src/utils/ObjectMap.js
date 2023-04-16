@@ -2,30 +2,37 @@ export const screenMap = {
   fan: {
     type: "Interactive",
     icon: "fan",
+    name: "Fan",
   },
   door: {
     type: "Interactive",
     icon: "door",
+    name: "Door",
   },
   led: {
     type: "Interactive",
     icon: "lightbulb-multiple-outline",
+    name: "Led",
   },
   "temp-sensor": {
     type: "Measure",
     icon: "thermometer-low",
+    name: "Temperature",
   },
   "light-sensor": {
     type: "Measure",
     icon: "alarm-light-outline",
+    name: "Light",
   },
   "humid-sensor": {
     type: "Measure",
     icon: "water-percent",
+    name: "Humidity",
   },
   "movement-sensor": {
     type: "Measure",
     icon: "run-fast",
+    name: "Movement",
   },
 };
 
