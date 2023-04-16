@@ -21,11 +21,12 @@ export default function HomeScreen({ navigation }) {
   const [room, setRoom] = useState([]);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      fetchRoom();
-    }, 200);
-    return () => clearTimeout(timer);
+    timer;
   }, []);
+
+  const timer = setTimeout(() => {
+    fetchRoom();
+  }, 1000);
 
   const fetchRoom = () => {
     axios
@@ -61,12 +62,14 @@ export default function HomeScreen({ navigation }) {
         renderItem={({ item }) => (
           <TouchableOpacity
             style={styles.card}
-            onPress={() =>
+            onPress={() => {
+              clearTimeout(timer);
               navigation.navigate("Room", {
+                home_id: item.home_id,
                 room_id: item._id,
                 name: item.name,
-              })
-            }
+              });
+            }}
           >
             <MaterialCommunityIcons
               name="bed-double-outline"

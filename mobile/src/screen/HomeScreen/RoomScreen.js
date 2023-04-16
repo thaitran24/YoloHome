@@ -25,11 +25,12 @@ export default function RoomScreen({ navigation }) {
   const route = useRoute();
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      fetchDevice();
-    }, 200);
-    return () => clearTimeout(timer);
+    timer;
   }, []);
+
+  const timer = setTimeout(() => {
+    fetchDevice();
+  }, 1000);
 
   const fetchDevice = () => {
     axios
@@ -67,13 +68,14 @@ export default function RoomScreen({ navigation }) {
         renderItem={({ item }) => (
           <TouchableOpacity
             style={styles.card}
-            onPress={() =>
+            onPress={() => {
+              clearTimeout(timer);
               navigation.navigate(`${screenMap[item.type].type}Device`, {
                 device_id: item._id,
                 curr_value: item.curr_value,
                 type: item.type,
-              })
-            }
+              });
+            }}
           >
             <MaterialCommunityIcons
               name={screenMap[item.type].icon}
@@ -81,7 +83,7 @@ export default function RoomScreen({ navigation }) {
               size={75}
             />
             <View>
-              <Text>{item._id}</Text>
+              <Text>{screenMap[item.type].name}</Text>
             </View>
           </TouchableOpacity>
         )}

@@ -6,6 +6,8 @@ import RoomScreen from "./RoomScreen";
 import InteractiveDeviceScreen from "./InteractiveDeviceScreen";
 import MeasureDeviceScreen from "./MeasureDeviceScreen";
 
+import { screenMap } from "../../utils/ObjectMap";
+
 const Stack = createNativeStackNavigator();
 
 export default function HomeScreenStack({ navigation }) {
@@ -25,7 +27,7 @@ export default function HomeScreenStack({ navigation }) {
         name="MeasureDevice"
         component={MeasureDeviceScreen}
         options={({ route }) => ({
-          title: route.params.device_id,
+          title: screenMap[route.params.type].name,
           headerTitleStyle: { color: "black" },
           headerBackTitleVisible: false,
         })}
@@ -34,7 +36,7 @@ export default function HomeScreenStack({ navigation }) {
         name="InteractiveDevice"
         component={InteractiveDeviceScreen}
         options={({ route }) => ({
-          title: route.params.device_id,
+          title: screenMap[route.params.type].name,
           headerTitleStyle: { color: "black" },
           headerBackTitleVisible: false,
         })}

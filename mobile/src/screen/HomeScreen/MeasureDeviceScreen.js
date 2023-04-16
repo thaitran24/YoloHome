@@ -1,7 +1,5 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { Component } from "react";
 import { View, SafeAreaView, Text, StyleSheet } from "react-native";
-
-import { useRoute } from "@react-navigation/native";
 
 import axios from "axios";
 
@@ -10,50 +8,59 @@ import { AuthContext } from "../../context/AuthProvider";
 
 import { unit } from "../../utils/ObjectMap";
 
-export default function MeasureDeviceScreen() {
-  const { userToken, userInfo } = useContext(AuthContext);
+export default class MeasureDeviceScreen extends Component {
+  static contextType = AuthContext;
 
-  const [value, setValue] = useState(0);
-
-  const route = useRoute();
-  // const unit = {
-  //   "temp-sensor": "oC",
-  //   "light-sensor": "%",
-  //   "humid-sensor": "%",
-  //   "movement-sensor": "",
-  // };
-
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const fetchData = () => {
-    axios
-      .get(`${baseURL}/api/v1/device/${route.params.device_id}`, {
-        headers: {
-          "access-token": userToken,
-        },
-      })
-      .then(function (response) {
-        // handle success
-        setValue(response.data.data[0].curr_value);
-        console.log("MeasureDeviceScreen: Fetch successful!");
-      })
-      .catch(function (error) {
-        // handle error
-        alert(error.message);
-      });
+  state = {
+    userToken: "",
+    value: this.props.route.params.curr_value,
   };
 
-  return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.box}>
-        <Text style={styles.content}>
-          {value} {unit[route.params.type]}
-        </Text>
-      </View>
-    </SafeAreaView>
-  );
+  componentDidMount() {
+    fetchData = () => {
+      axios
+        .get(`${baseURL}/api/v1/device/${this.props.route.params.device_id}`, {
+          headers: {
+            "access-token": this.state.userToken,
+          },
+        })
+        .then((response) => {
+          this.setState({
+            value: response.data.data[0].curr_value,
+          });
+          console.log("State value: ", this.state.value);
+          console.log("MeasureDeviceScreen: Fetch successful!");
+        })
+        .catch(function (error) {
+          // handle error
+          alert(error.message);
+        });
+    };
+
+    this.interval = setInterval(() => {
+      fetchData();
+    }, 1000);
+  }
+
+  componentWillUnmount() {
+    clearTimeout(this.interval);
+  }
+
+  render() {
+    const { userToken } = this.context;
+
+    this.state.userToken = userToken;
+
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.box}>
+          <Text style={styles.content}>
+            {this.state.value} {unit[this.props.route.params.type]}
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 }
 
 const styles = StyleSheet.create({

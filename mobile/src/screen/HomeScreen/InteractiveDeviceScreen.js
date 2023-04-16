@@ -17,6 +17,7 @@ export default function InteractiveDeviceScreen() {
   const { userToken } = useContext(AuthContext);
 
   const route = useRoute();
+  const [isFirstTime, setIsFisrtTime] = useState(true);
   const [value, setValue] = useState(route.params.curr_value);
 
   useEffect(() => {
@@ -27,20 +28,24 @@ export default function InteractiveDeviceScreen() {
   form.append("data", value);
 
   const putData = () => {
-    axios
-      .put(`${baseURL}/api/v1/device/${route.params.device_id}`, form, {
-        headers: {
-          "access-token": userToken,
-        },
-      })
-      .then(function (response) {
-        // handle success
-        console.log("InteractiveDevice: Send Data Successful!");
-      })
-      .catch(function (error) {
-        // handle error
-        alert(error.message);
-      });
+    if (isFirstTime === true) {
+      setIsFisrtTime(false);
+    } else {
+      axios
+        .put(`${baseURL}/api/v1/device/${route.params.device_id}`, form, {
+          headers: {
+            "access-token": userToken,
+          },
+        })
+        .then(function (response) {
+          // handle success
+          console.log("InteractiveDevice: Send Data Successful!");
+        })
+        .catch(function (error) {
+          // handle error
+          alert(error.message);
+        });
+    }
   };
 
   return (
