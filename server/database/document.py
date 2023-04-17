@@ -235,7 +235,8 @@ class Home():
 
         self.data = {
             "_id": None,
-            "name" : name
+            "name" : name,
+            "alarm" : None
         }
 
     def _add_callback_(self, 
@@ -278,6 +279,15 @@ class Home():
         if query is None:
             query = {"_id" : self.data["_id"]}
         collection._remove_data(config.database.DOC_HOME_LIST, query, mode)
+
+    def warning_trigger(self):
+        now = datetime.now()
+        dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
+
+        if self.data['alarm'] is None:
+            self.data['alarm'] = [dt_string]
+        else:
+            self.data['alarm'].append(dt_string)
 
     def load_data(self, 
                   load_data : dict):
