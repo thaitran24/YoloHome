@@ -3,6 +3,8 @@ export const screenMap = {
     type: "Interactive",
     icon: "fan",
     name: "Fan",
+    min: 20,
+    max: 75,
   },
   door: {
     type: "Interactive",
@@ -18,6 +20,8 @@ export const screenMap = {
     type: "Measure",
     icon: "thermometer-low",
     name: "Temperature",
+    min: 15,
+    max: 35,
   },
   "light-sensor": {
     type: "Measure",
@@ -28,6 +32,8 @@ export const screenMap = {
     type: "Measure",
     icon: "water-percent",
     name: "Humidity",
+    min: 30,
+    max: 80,
   },
   "movement-sensor": {
     type: "Measure",
