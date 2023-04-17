@@ -281,6 +281,9 @@ class Home():
         collection._remove_data(config.database.DOC_HOME_LIST, query, mode)
 
     def warning_trigger(self):
+
+        '''Use the log the alarm when it triggered'''
+        
         now = datetime.now()
         dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
 
