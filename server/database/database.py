@@ -2,6 +2,8 @@ from pymongo import MongoClient
 from database.document import *
 from database.error import DatabaseException
 import config
+import gridfs
+
 
 class Database():
     def __init__(self, connection_string):
@@ -172,6 +174,46 @@ class Database():
         }
 
         self._add_data(config.database.DOC_USAGES, command_log)
+
+    def update_faceid(self,
+                      user: User,
+                      image):
+        
+        """Give a image path, this function will read this image and save it to database"""
+
+        if not isinstance(user, User):
+            message = "The faceID must be add to User entity only!"
+            raise EntityException(message)
+        try:
+            with open(image, 'rb') as image_file:
+                image_data = image_file.read()
+        except:
+            message = "Image file path not found. Check your image path again!"
+            raise OperationFailed(message)
+        
+        fs = gridfs.GridFS(self.database, collection="images")
+
+        file_id = fs.put(image_data)
+
+        user.add_face_id(file_id)
+
+    def load_faceid(self,
+                    user : User,
+                    index):
+        
+        """Load face image from user and return binary string of this image"""
+
+        if not isinstance(user, User):
+            message = "The faceID must be add to User entity only!"
+            raise EntityException(message)
+        
+        fs = gridfs.GridFS(self.database, collection="images")
+
+        file_id = user.load_face_id(index)
+
+        image_file = fs.get(file_id)
+
+        return image_file.read()
 
     def list_collection_names(self):
         return self.database.list_collection_names()
