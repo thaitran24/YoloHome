@@ -215,5 +215,6 @@ class Database():
 
         return image_file.read()
 
+
     def list_collection_names(self):
         return self.database.list_collection_names()
