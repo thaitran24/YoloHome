@@ -80,7 +80,7 @@ class User():
         collection._update_data(config.database.DOC_USER_LIST, self.data, query)
 
     def count_image_id(self):
-        return str("You have {} id(s) in your image id.".format(0 if self.data['image_id'] is None else len(self.data['image_id'])))
+        return 0 if self.data['image_id'] is None else len(self.data['image_id'])
 
     def load_face_id(self,
                      index):
