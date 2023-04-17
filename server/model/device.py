@@ -8,7 +8,7 @@ class DeviceModel():
 
     def update_device_data(self, device_id, data):
         try:
-            device_list = self.get_device(device_id)
+            device_list = self.get_device(device_id, include_log=True)
             if len(device_list) < 1:
                 raise RecordNotFound(device_id)
             device = device_list[0]

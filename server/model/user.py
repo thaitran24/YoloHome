@@ -76,4 +76,13 @@ class UserModel():
             raise RecordDeleteError(user_id)
         
         return user
-    
+
+    def update_user_image(self, user_id, image_path):
+        try:
+            user_list = self.get_user(user_id)
+            if len(user_list) < 1:
+                raise RecordNotFound(user_id)
+            user = user_list[0]
+            self._database.update_faceid(user, image_path)
+        except:
+            raise RecordUpdateError(user_id)

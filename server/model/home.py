@@ -47,3 +47,15 @@ class HomeModel():
             raise RecordDeleteError(home_id)
         return home
     
+    
+    def update_warning(self, home_id, alarm):
+        try:
+            home_list = self.get_home(home_id)
+            if len(home_list) < 1:
+                raise RecordNotFound(home_id)
+            home = home_list[0]
+            update_data = {'alarm': alarm}
+            self._database.update_one_data(home, update_data)
+        except:
+            raise RecordUpdateError(home_id)
+        return home

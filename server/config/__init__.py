@@ -1,2 +1,2 @@
-import config.database
-import config.server
+import config.database as database
+import config.server as server
