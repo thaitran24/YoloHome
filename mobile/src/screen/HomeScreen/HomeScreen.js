@@ -26,7 +26,7 @@ export default function HomeScreen({ navigation }) {
 
   const timer = setTimeout(() => {
     fetchRoom();
-  }, 1000);
+  }, 1500);
 
   const fetchRoom = () => {
     axios

@@ -30,7 +30,7 @@ export default function RoomScreen({ navigation }) {
 
   const timer = setTimeout(() => {
     fetchDevice();
-  }, 1000);
+  }, 1500);
 
   const fetchDevice = () => {
     axios

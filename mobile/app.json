@@ -19,7 +19,11 @@
       "infoPlist": {
         "NSAppTransportSecurity": {
           "NSAllowsArbitraryLoads": true
-        }
+        },
+        "UIBackgroundModes": [
+          "location",
+          "fetch"
+        ]
       },
       "bundleIdentifier": "com.thnh13.mobile"
     },
@@ -29,6 +33,11 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.thnh13.mobile"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "29ae29a0-1354-41c6-aff6-062cefce1f34"
+      }
     }
   }
 }
