@@ -195,7 +195,7 @@ class Database():
 
         file_id = fs.put(image_data)
 
-        user.add_face_id(file_id)
+        user.add_face_id(self, file_id)
 
     def load_faceid(self,
                     user : User,

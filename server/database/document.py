@@ -66,13 +66,18 @@ class User():
         collection._remove_data(config.database.DOC_USER_LIST, query, mode)
 
     def add_face_id(self, 
+                    collection,
                     image_id):
         
+        query = {"_id" : self.data["_id"]}
+
         if self.data['image_id'] is None:
             self.data['image_id'] = [image_id]
 
         else:
             self.data['image_id'].append(image_id)
+
+        collection._update_data(config.database.DOC_USER_LIST, self.data, query)
 
     def count_image_id(self):
         return str("You have {} id(s) in your image id.".format(0 if self.data['image_id'] is None else len(self.data['image_id'])))
