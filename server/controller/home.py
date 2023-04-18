@@ -22,7 +22,6 @@ class MultiHomeAPI(Resource):
         
     @token_require
     def post(self):
-        # record = json.loads(request.data.decode('UTF-8'))['form']
         record = request.form.to_dict()
         try:
             home = home_model.add_home(record)
