@@ -162,3 +162,36 @@ class SingleDeviceAPI(Resource):
             return create_response('', AdafruitError())
         
         return create_response(device.data)
+
+
+class GatewayDeviceAPI(Resource):
+    def put(self, device_id):
+        record = request.form.to_dict()
+        try:
+            device_list = device_model.get_device(device_id)
+            if len(device_list) < 1:
+                return create_response('', RecordNotFound())
+        except Exception as err:
+            return create_response('', err)
+
+        device = device_list[0]
+        group_key = device.data["home_id"]
+        feed_key = device.data["_id"]
+
+        try:
+            data = record['data']
+        except:
+            return create_response('', LackRequestData())
+        
+        try:
+            adafruit_server.send_data(feed_key="{}.{}".format(group_key, feed_key), data=data)
+        except:
+            return create_response('', AdafruitError())
+        
+        try:
+            device_list = device_model.get_device(device_id)
+            device = device_list[0]
+        except Exception as err:
+            return create_response('', err)
+        
+        return create_response(device.data)

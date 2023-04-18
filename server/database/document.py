@@ -1,6 +1,7 @@
 import config
 from datetime import datetime
 from database.error import *
+import gridfs
 
 class User():
     def __init__(self,
@@ -63,6 +64,37 @@ class User():
         if query is None:
             query = {"_id" : self.data["_id"]}
         collection._remove_data(config.database.DOC_USER_LIST, query, mode)
+
+    def add_face_id(self, 
+                    collection,
+                    image_id):
+        
+        query = {"_id" : self.data["_id"]}
+
+        if self.data['image_id'] is None:
+            self.data['image_id'] = [image_id]
+
+        else:
+            self.data['image_id'].append(image_id)
+
+        collection._update_data(config.database.DOC_USER_LIST, self.data, query)
+
+    def count_image_id(self):
+        return 0 if self.data['image_id'] is None else len(self.data['image_id'])
+
+    def load_face_id(self,
+                     index):
+        if self.data['image_id'] is None:
+            message = "No faceID of this User found. Please add a faceID first!"
+            raise OperationFailed(message)
+        else:
+            if index > len(self.data['image_id']):
+                message = "This user only has {} id(s). Your query of index: {} is out of range!".format(len(self.data['image_id']), index+1)
+                raise OperationFailed("")
+            file_id = self.data['image_id'][index]
+
+            return file_id
+        
 
     def load_data(self, 
                   load_data : dict):
@@ -235,7 +267,8 @@ class Home():
 
         self.data = {
             "_id": None,
-            "name" : name
+            "name" : name,
+            "alarm" : None
         }
 
     def _add_callback_(self, 
@@ -278,6 +311,18 @@ class Home():
         if query is None:
             query = {"_id" : self.data["_id"]}
         collection._remove_data(config.database.DOC_HOME_LIST, query, mode)
+
+    def warning_trigger(self):
+
+        '''Use the log the alarm when it triggered'''
+
+        now = datetime.now()
+        dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
+
+        if self.data['alarm'] is None:
+            self.data['alarm'] = [dt_string]
+        else:
+            self.data['alarm'].append(dt_string)
 
     def load_data(self, 
                   load_data : dict):

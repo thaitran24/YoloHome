@@ -50,9 +50,19 @@ class SingleHomeAPI(Resource):
         data = [home.data for home in home_list]
         return create_response(data)
 
-    @token_require
     def put(self, home_id):
-        pass
+        record = request.form.to_dict()
+        try:
+            alarm_info = record['alarm']
+        except:
+            return create_response('', LackRequestData())
+        
+        try:
+            home = home_model.update_warning(home_id, alarm_info)
+        except:
+            raise RecordUpdateError()
+        
+        return create_response(home.data)
 
     @token_require
     def delete(self, home_id):
