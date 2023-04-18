@@ -94,6 +94,10 @@ class AdafruitMQTT():
         for feed in new_feeds:
             self._mqtt_client.subscribe(feed)
 
+    def connect(self):
+        self._mqtt_client.connect()
+        self._mqtt_client.loop_background()
+
     def run(self):
         self._mqtt_client.connect()
         self._mqtt_client.loop_background()

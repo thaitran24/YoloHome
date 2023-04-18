@@ -12,6 +12,7 @@ class DeviceModel():
             if len(device_list) < 1:
                 raise RecordNotFound(device_id)
             device = device_list[0]
+            device.data["curr_value"] = data
             update_data = {"curr_value": data}
             self._database.update_one_data(device, update_data)
         except:

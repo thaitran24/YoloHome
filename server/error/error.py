@@ -5,10 +5,10 @@ class AdafruitError(Exception):
         super().__init__(self.message)
 
 class RecordFindError(Exception):
-    def __init__(self, record=None):
+    def __init__(self, record=None, message="Some errors happened when interacting with database"):
         self.type = "RecordFindError"
         self.record = record if record else ""
-        self.message = "Cannot find record {}. Some errors happened when interacting with database".format(record)
+        self.message = "Cannot find record {0}. {1}".format(record, message)
         super().__init__(self.message)
 
 class RecordNotFound(Exception):
@@ -19,24 +19,24 @@ class RecordNotFound(Exception):
         super().__init__(self.message)
 
 class RecordUpdateError(Exception):
-    def __init__(self, record):
+    def __init__(self, record, message="Some errors happened when interacting with database"):
         self.type = "RecordUpdateError"
         self.record = record
-        self.message = "Cannot update record {}. Some errors happened when interacting with database".format(record)
+        self.message = "Cannot update record {0}. {1}".format(record, message)
         super().__init__(self.message)
 
 class RecordDeleteError(Exception):
-    def __init__(self, record):
+    def __init__(self, record, message="Some errors happened when interacting with database"):
         self.type = "RecordDeleteError"
         self.record = record
-        self.message = "Cannot delete record {}. Some errors happened when interacting with database".format(record)
+        self.message = "Cannot delete record {0}. {1}".format(record, message)
         super().__init__(self.message)
 
 class RecordInsertError(Exception):
-    def __init__(self, record):
+    def __init__(self, record, message="Some errors happened when interacting with database"):
         self.type = "RecordInsertError"
         self.record = record
-        self.message = "Cannot add record {}. Some errors happened when interacting with database".format(record)
+        self.message = "Cannot add record {0}. {1}".format(record, message)
         super().__init__(self.message)
 
 class LackRequestData(Exception):

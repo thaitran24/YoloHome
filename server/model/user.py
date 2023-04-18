@@ -42,7 +42,29 @@ class UserModel():
             raise RecordInsertError(record)
         
         return user
-
+    
+    def update_user_home(self, user_id, home_id):
+        try:
+            user_list = self.get_user(user_id)
+        except Exception as err:
+            return err
+        
+        if len(user_list) < 1:
+            raise RecordNotFound(user_id)
+        user = user_list[0]
+        if user.data["home_id"]:
+            if home_id in user.data["home_id"]:
+                raise RecordUpdateError(user_id, message="{0} already exist in {1}".format(home_id, user_id))
+            user.data["home_id"].append(home_id)
+        else:
+            user.data["home_id"] = [home_id]
+        update_data = {"home_id": user.data["home_id"]}
+        try:
+            self._database.update_one_data(user, update_data)
+        except:
+            raise RecordUpdateError(user_id)
+        return user
+    
     def delete_user(self, user_id):
         try:
             user_list = self.get_user(user_id)

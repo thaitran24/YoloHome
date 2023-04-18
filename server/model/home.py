@@ -19,7 +19,7 @@ class HomeModel():
             raise RecordNotFound(home_id)
         
         return home_list
-
+    
     def add_home(self, record):
         try:
             name = record['name']
@@ -34,6 +34,7 @@ class HomeModel():
             raise RecordInsertError(record)
 
         return home
+
 
     def delete_home(self, home_id):
         try:

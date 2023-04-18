@@ -35,8 +35,7 @@ class MultiRoomAPI(Resource):
 
     @token_require
     def post(self):
-        # record = request.form.to_dict()
-        record = json.loads(request.data.decode('UTF-8'))['form']
+        record = request.form.to_dict()
         try:
             room = room_model.add_room(record)
         except Exception as err:
