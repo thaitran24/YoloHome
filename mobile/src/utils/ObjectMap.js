@@ -3,8 +3,6 @@ export const screenMap = {
     type: "Interactive",
     icon: "fan",
     name: "Fan",
-    min: 20,
-    max: 75,
   },
   door: {
     type: "Interactive",
@@ -26,7 +24,7 @@ export const screenMap = {
   "light-sensor": {
     type: "Measure",
     icon: "alarm-light-outline",
-    name: "Light",
+    name: "Light strength",
   },
   "humid-sensor": {
     type: "Measure",
@@ -44,26 +42,26 @@ export const screenMap = {
 
 export const deviceMode = {
   fan: [
-    { key: "75%", value: 75, color: "#ff9900" },
-    { key: "100%", value: 100, color: "#cc3300" },
-    { key: "25%", value: 25, color: "#33adff" },
-    { key: "50%", value: 50, color: "#b3b300" },
-    { key: "Off", value: 0, color: "#8c8c8c" },
+    { key: "Off", value: 0, color: "#8c8c8c", icon: "fan-remove" },
+    { key: "25%", value: 25, color: "#33adff", icon: "fan-speed-1" },
+    { key: "50%", value: 50, color: "#b3b300", icon: "fan-speed-2" },
+    { key: "75%", value: 75, color: "#ff9900", icon: "fan-speed-3" },
+    { key: "100%", value: 100, color: "#6b117a", icon: "fan-plus" },
   ],
   led: [
-    { key: "Off", value: 0, color: "#8c8c8c" },
-    { key: "Red", value: 1, color: "#cc3300" },
-    { key: "Yellow", value: 2, color: "#e6e600" },
-    { key: "Blue", value: 3, color: "#0099ff" },
+    { key: "Off", value: 0, color: "#8c8c8c", icon: "lightbulb-outline" },
+    { key: "Red", value: 1, color: "#cc3300", icon: "lightbulb-on-outline" },
+    { key: "Yellow", value: 2, color: "#b3b300", icon: "lightbulb-on-outline" },
+    { key: "Blue", value: 3, color: "#0099ff", icon: "lightbulb-on-outline" },
   ],
   door: [
-    { key: "Closed", value: 0, color: "#8c8c8c" },
-    { key: "Opened", value: 1, color: "#669900" },
+    { key: "Closed", value: 0, color: "#8c8c8c", icon: "lock" },
+    { key: "Opened", value: 1, color: "#669900", icon: "lock-open-variant" },
   ],
 };
 
 export const unit = {
-  "temp-sensor": "oC",
+  "temp-sensor": "\u00b0C",
   "light-sensor": "%",
   "humid-sensor": "%",
   "movement-sensor": "",

@@ -7,6 +7,7 @@ import { AuthContext } from "../context/AuthProvider";
 import AppStack from "./AppStack";
 import AuthStack from "./AuthStack";
 import SplashScreen from "../screen/SplashScreen";
+import Demo from "./Demo";
 
 export default function Navigation() {
   const { userToken, isLoading } = useContext(AuthContext);
@@ -22,5 +23,6 @@ export default function Navigation() {
         )}
       </NavigationContainer>
     </SafeAreaProvider>
+    // <Demo />
   );
 }
