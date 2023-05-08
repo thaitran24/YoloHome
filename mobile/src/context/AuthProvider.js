@@ -141,7 +141,9 @@ export const AuthProvider = ({ children }) => {
         await axios
           .post(`${baseURL}/login`, userData)
           .then(function (response) {
+            console.log(response.data);
             setUserToken(response.data["access-token"]);
+            console.log("user token:", userToken);
             setUserInfo(response.data);
             setclientId(uuid.v4());
             if (userInfo) {
@@ -208,7 +210,19 @@ export const AuthProvider = ({ children }) => {
         AsyncStorage.removeItem("clientId");
         setIsLoading(false);
       },
-      signUp: () => {},
+      signUp: async (data) => {
+        const userData = new FormData();
+        userData.append("username", data.username);
+        userData.append("password", data.password);
+        await axios
+          .post(`${baseURL}/signup`, userData)
+          .then(function (response) {
+            console.log("Sign up successful");
+          })
+          .catch(function (error) {
+            console.log(error);
+          });
+      },
     }),
     []
   );

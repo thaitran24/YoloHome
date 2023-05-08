@@ -45,7 +45,8 @@ export default function RoomScreen({ navigation }) {
           response.data.data.filter(function (data) {
             return (
               data.home_id == userInfo.data.home_id &&
-              data.room_id == route.params.room_id
+              data.room_id == route.params.room_id &&
+              data.type !== "movement-sensor"
             );
           })
         );
@@ -97,8 +98,9 @@ const styles = StyleSheet.create({
     flex: 1,
     width: "100%",
     backgroundColor: "#F2F2F2",
-    justifyContent: "center",
-    alignItems: "center",
+    alignItems: "flex-start",
+    marginVertical: 0,
+    marginHorizontal: "5%",
   },
   list: {
     // width: "100%",

@@ -10,30 +10,27 @@ import {
 } from "react-native";
 import { MaterialCommunityIcons } from "react-native-vector-icons";
 
-import { useRoute } from "@react-navigation/native";
 import axios from "axios";
 
 import { AuthContext } from "../../context/AuthProvider";
 import { baseURL } from "../../../env";
 
-export default function HomeScreen({ navigation }) {
+export default function HomesScreen({ navigation }) {
   const { userInfo, userToken } = useContext(AuthContext);
 
-  const [room, setRoom] = useState([]);
-
-  const route = useRoute();
+  const [home, setHome] = useState([]);
 
   useEffect(() => {
     timer;
   }, []);
 
   const timer = setTimeout(() => {
-    fetchRoom();
+    fetchHome();
   }, 1500);
 
-  const fetchRoom = () => {
+  const fetchHome = () => {
     axios
-      .get(`${baseURL}/api/v1/room`, {
+      .get(`${baseURL}/api/v1/home`, {
         headers: {
           "access-token": userToken,
         },
@@ -41,13 +38,8 @@ export default function HomeScreen({ navigation }) {
       .then(function (response) {
         // handle success
 
-        setRoom(
-          response.data.data.filter(function (item) {
-            // return item.home_id == userInfo.data.home_id;
-            return (item.home_id = route.params.home_id);
-          })
-        );
-        console.log("Home: fetch Successful!");
+        setHome(response.data.data);
+        console.log("User Home: fetch Successful!");
       })
       .catch(function (error) {
         // handle error
@@ -58,7 +50,7 @@ export default function HomeScreen({ navigation }) {
   return (
     <SafeAreaView style={styles.container}>
       <FlatList
-        data={room}
+        data={home}
         style={styles.list}
         numColumns={2}
         showsVerticalScrollIndicator={false}
@@ -68,18 +60,12 @@ export default function HomeScreen({ navigation }) {
             style={styles.card}
             onPress={() => {
               clearTimeout(timer);
-              navigation.navigate("Room", {
-                home_id: item.home_id,
-                room_id: item._id,
-                name: item.name,
+              navigation.navigate("My Home", {
+                home_id: item._id,
               });
             }}
           >
-            <MaterialCommunityIcons
-              name="bed-double-outline"
-              color={"#048EF2"}
-              size={90}
-            />
+            <MaterialCommunityIcons name="home" color={"#048EF2"} size={90} />
             <View>
               <Text>{item.name}</Text>
             </View>

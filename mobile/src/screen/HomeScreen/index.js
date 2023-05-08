@@ -1,6 +1,7 @@
 import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
+import HomesScreen from "./HomesScreen";
 import HomeScreen from "./HomeScreen";
 import RoomScreen from "./RoomScreen";
 import InteractiveDeviceScreen from "./InteractiveDeviceScreen";
@@ -13,7 +14,16 @@ const Stack = createNativeStackNavigator();
 export default function HomeScreenStack({ navigation }) {
   return (
     <Stack.Navigator>
-      <Stack.Screen name="My Home" component={HomeScreen} />
+      <Stack.Screen name="My Homes" component={HomesScreen} />
+      <Stack.Screen
+        name="My Home"
+        component={HomeScreen}
+        options={({ route }) => ({
+          title: route.params.name,
+          headerTitleStyle: { color: "black" },
+          headerBackTitleVisible: false,
+        })}
+      />
       <Stack.Screen
         name="Room"
         component={RoomScreen}

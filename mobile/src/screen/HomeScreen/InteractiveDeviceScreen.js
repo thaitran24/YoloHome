@@ -3,13 +3,13 @@ import { View, SafeAreaView, Text, StyleSheet, FlatList } from "react-native";
 import { useRoute } from "@react-navigation/native";
 import axios from "axios";
 
-import { Slider } from "@miblanchard/react-native-slider";
-
 import { AuthContext } from "../../context/AuthProvider";
 
 import { baseURL } from "../../../env";
 
-import CustomButton from "../../components/CustomButton";
+// import CustomButton from "../../components/CustomButton";
+import { ThemedButton } from "react-native-really-awesome-button";
+import { MaterialCommunityIcons } from "react-native-vector-icons";
 
 import { deviceMode } from "../../utils/ObjectMap";
 
@@ -19,6 +19,9 @@ export default function InteractiveDeviceScreen() {
   const route = useRoute();
   const [isFirstTime, setIsFisrtTime] = useState(true);
   const [value, setValue] = useState(route.params.curr_value);
+  const [currentButton, setCurrentButon] = useState(
+    deviceMode[route.params.type].key
+  );
 
   useEffect(() => {
     putData();
@@ -48,6 +51,31 @@ export default function InteractiveDeviceScreen() {
     }
   };
 
+  // return (
+  //   <View style={styles.container}>
+  //     <View style={styles.listContainer}>
+  //       <FlatList
+  //         data={deviceMode[route.params.type]}
+  //         contentContainerStyle={styles.listContent}
+  //         numColumns={2}
+  //         scrollEnabled={false}
+  //         keyExtractor={(item) => item.key}
+  //         renderItem={({ item }) => (
+  //           <CustomButton
+  //             text={item.key}
+  //             onPress={() => {
+  //               setValue(item.value);
+  //               console.log("Sending", item.value, "...");
+  //             }}
+  //             bgColor={item.color}
+  //             type={"ROUND"}
+  //           />
+  //         )}
+  //       />
+  //     </View>
+  //   </View>
+  // );
+
   return (
     <View style={styles.container}>
       <View style={styles.listContainer}>
@@ -58,15 +86,30 @@ export default function InteractiveDeviceScreen() {
           scrollEnabled={false}
           keyExtractor={(item) => item.key}
           renderItem={({ item }) => (
-            <CustomButton
-              text={item.key}
+            <ThemedButton
+              name="bruce"
+              type="primary"
+              height={100}
+              width={150}
+              textSize={25}
+              before={
+                <MaterialCommunityIcons
+                  name={item.icon}
+                  color={item.key === currentButton ? "#625E5D" : "#FFFFFF"}
+                  size={40}
+                />
+              }
+              backgroundColor={item.color}
+              disabled={item.key === currentButton ? true : false}
               onPress={() => {
                 setValue(item.value);
+                setCurrentButon(item.key);
                 console.log("Sending", item.value, "...");
               }}
-              bgColor={item.color}
-              type={"ROUND"}
-            />
+              style={styles.button}
+            >
+              {item.key}
+            </ThemedButton>
           )}
         />
       </View>
@@ -77,12 +120,7 @@ export default function InteractiveDeviceScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
     alignItems: "center",
-  },
-  listContainer: {
-    flex: 1,
-    width: "100%",
   },
   listContent: {
     flex: 1,
@@ -90,6 +128,8 @@ const styles = StyleSheet.create({
     height: "100%",
     alignItems: "center",
     justifyContent: "center",
-    alignContent: "center",
+  },
+  button: {
+    margin: 10,
   },
 });
