@@ -64,5 +64,4 @@ export const unit = {
   "temp-sensor": "\u00b0C",
   "light-sensor": "%",
   "humid-sensor": "%",
-  "movement-sensor": "",
 };

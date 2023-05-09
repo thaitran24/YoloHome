@@ -23,13 +23,17 @@ export default function HomeScreen({ navigation }) {
 
   const route = useRoute();
 
+  // useEffect(() => {
+  //   timer;
+  // }, []);
+
   useEffect(() => {
-    timer;
+    fetchRoom();
   }, []);
 
-  const timer = setTimeout(() => {
-    fetchRoom();
-  }, 1500);
+  // const timer = setTimeout(() => {
+  //   fetchRoom();
+  // }, 1500);
 
   const fetchRoom = () => {
     axios
@@ -67,7 +71,7 @@ export default function HomeScreen({ navigation }) {
           <TouchableOpacity
             style={styles.card}
             onPress={() => {
-              clearTimeout(timer);
+              // clearTimeout(timer);
               navigation.navigate("Room", {
                 home_id: item.home_id,
                 room_id: item._id,

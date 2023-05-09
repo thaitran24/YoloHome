@@ -51,33 +51,8 @@ export default function InteractiveDeviceScreen() {
     }
   };
 
-  // return (
-  //   <View style={styles.container}>
-  //     <View style={styles.listContainer}>
-  //       <FlatList
-  //         data={deviceMode[route.params.type]}
-  //         contentContainerStyle={styles.listContent}
-  //         numColumns={2}
-  //         scrollEnabled={false}
-  //         keyExtractor={(item) => item.key}
-  //         renderItem={({ item }) => (
-  //           <CustomButton
-  //             text={item.key}
-  //             onPress={() => {
-  //               setValue(item.value);
-  //               console.log("Sending", item.value, "...");
-  //             }}
-  //             bgColor={item.color}
-  //             type={"ROUND"}
-  //           />
-  //         )}
-  //       />
-  //     </View>
-  //   </View>
-  // );
-
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <View style={styles.listContainer}>
         <FlatList
           data={deviceMode[route.params.type]}
@@ -113,7 +88,7 @@ export default function InteractiveDeviceScreen() {
           )}
         />
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 
