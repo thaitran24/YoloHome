@@ -260,6 +260,25 @@ class Device():
 
     def get_log(self):
         return {self.data["states"], self.data["values"]}
+    
+    def load_theft(self):
+        if self.data['curr_value'] is None:
+            message = "No theft found!"
+            raise OperationFailed(message)
+        else:
+            file_id = self.data['curr_value']
+
+            return file_id
+        
+    def add_theft(self, 
+                    collection,
+                    image_id):
+        
+        query = {"_id" : self.data["_id"]}
+        
+        self.data['curr_value'] = image_id
+
+        collection._update_data(config.database.DOC_DEVICE_LIST, self.data, query)
 
 class Home():
     def __init__(self,
