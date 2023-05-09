@@ -1,5 +1,6 @@
 import cv2
 import time
+import dropbox
 import torch
 import datetime
 import requests
@@ -52,10 +53,21 @@ class HumanDetection():
         if self.is_warning_sent:
             return
         
-        res = requests.put(
-            url="http://{}:{}/api/gateway/device/{}".format(config.SERVER_HOST, config.SERVER_PORT, config.WARNING_ID),
-            data=data,
-            files={'file': open('images/tmp.mp4', 'rb')})
+        try:
+            dbx = dropbox.Dropbox(config.DBX_TOKEN)
+            vid_file = 'images/tmp.mp4'
+            with open(vid_file, "rb") as f:
+                meta = dbx.files_upload(f.read(), '/Videos/tmp.mp4', mode=dropbox.files.WriteMode("overwrite"))
+        except Exception as err:
+            print('Cannot push video: ', err)
+
+        try:
+            res = requests.put(
+                url="http://{}:{}/api/gateway/device/{}".format(config.SERVER_HOST, config.SERVER_PORT, config.WARNING_ID),
+                data=data)
+        except Exception as err:
+            print('Cannot send request: ', err)
+        
         self.is_warning_sent = True
         self.send_start_time = time.time()
         
