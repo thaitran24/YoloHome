@@ -1,92 +1,96 @@
-import React, { Component } from "react";
+import React, { useState, useEffect } from "react";
 import { View, SafeAreaView, Text, StyleSheet } from "react-native";
 
-import axios from "axios";
+import { useRoute } from "@react-navigation/native";
 
-import { baseURL } from "../../../env";
-import { AuthContext } from "../../context/AuthProvider";
+import { ADA_USER, ADA_KEY } from "../../../env";
+
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import init from "react_native_mqtt";
 
 import { MaterialCommunityIcons } from "react-native-vector-icons";
 import { unit, screenMap } from "../../utils/ObjectMap";
 
-export default class MeasureDeviceScreen extends Component {
-  static contextType = AuthContext;
+export default function MeasureDeviceScreen() {
+  const route = useRoute();
+  const [value, setValue] = useState(route.params.curr_value);
 
-  state = {
-    userToken: "",
-    value: this.props.route.params.curr_value,
+  var clientScreen = null;
+
+  const [clientId, setclientId] = useState("");
+
+  useEffect(() => {
+    connectMQTT();
+  }, []);
+
+  const connectMQTT = () => {
+    function onConnectionLost(responseObject) {
+      if (responseObject.errorCode !== 0) {
+        console.log("onConnectionLost: " + responseObject.errorMessage);
+      }
+    }
+
+    function onFailure() {
+      console.log("Failed to connect..");
+    }
+
+    function onMessageArrived(message) {
+      // console.log("onMessageArrived: " + message.payloadString);
+      setValue(message.payloadString);
+    }
+
+    function onConnect() {
+      console.log(clientId, " connected successfully...");
+      clientScreen.subscribe(
+        `thaitran24/feeds/${route.params.home_id}.${route.params.device_id}`
+      );
+    }
+
+    init({
+      size: 10000,
+      storageBackend: AsyncStorage,
+      defaultExpires: 1000 * 3600 * 24,
+      enableCache: true,
+      reconnect: true,
+      sync: {},
+    });
+
+    if (clientScreen === null && clientId == "") {
+      setclientId(String(Math.floor(Math.random() * 2000) + 1000));
+      console.log("clientId:", clientId);
+      clientScreen = new Paho.MQTT.Client("io.adafruit.com", 443, clientId);
+      clientScreen.onConnectionLost = onConnectionLost;
+      clientScreen.onMessageArrived = onMessageArrived;
+      clientScreen.connect({
+        onSuccess: onConnect,
+        onFailure: onFailure,
+        useSSL: true,
+        userName: ADA_USER,
+        password: ADA_KEY,
+      });
+    }
   };
 
-  componentDidMount() {
-    fetchData = () => {
-      axios
-        .get(`${baseURL}/api/v1/device/${this.props.route.params.device_id}`, {
-          headers: {
-            "access-token": this.state.userToken,
-          },
-        })
-        .then((response) => {
-          this.setState({
-            value: response.data.data[0].curr_value,
-          });
-          console.log("State value: ", this.state.value);
-          console.log("MeasureDeviceScreen: Fetch successful!");
-        })
-        .catch(function (error) {
-          // handle error
-          alert(error.message);
-        });
-    };
-
-    this.interval = setInterval(() => {
-      fetchData();
-    }, 1000);
-  }
-
-  componentWillUnmount() {
-    clearTimeout(this.interval);
-  }
-
-  render() {
-    const { userToken } = this.context;
-
-    this.state.userToken = userToken;
-
-    // return (
-    //   <SafeAreaView style={styles.container}>
-    //     <View style={styles.box}>
-    //       <Text style={styles.content}>
-    //         {this.state.value} {unit[this.props.route.params.type]}
-    //       </Text>
-    //     </View>
-    //   </SafeAreaView>
-    // );
-
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.info}>
-          <View style={styles.data}>
-            <Text style={styles.content}>{this.state.value}</Text>
-            <Text style={styles.unit}>
-              {unit[this.props.route.params.type]}
-            </Text>
-          </View>
-          <View style={styles.icon}>
-            <View style={styles.nameContainer}>
-              <Text style={styles.name}>
-                {screenMap[this.props.route.params.type].name}
-              </Text>
-            </View>
-            <MaterialCommunityIcons
-              name={screenMap[this.props.route.params.type].icon}
-              color={"#048EF2"}
-              size={100}
-            />
-          </View>
+  return (
+    <SafeAreaView style={styles.container}>
+      <View style={styles.info}>
+        <View style={styles.data}>
+          <Text style={styles.content}>{value}</Text>
+          <Text style={styles.unit}>{unit[route.params.type]}</Text>
         </View>
-      </SafeAreaView>
-    );
-  }
+        <View style={styles.icon}>
+          <View style={styles.nameContainer}>
+            <Text style={styles.name}>{screenMap[route.params.type].name}</Text>
+          </View>
+          <MaterialCommunityIcons
+            name={screenMap[route.params.type].icon}
+            color={"#048EF2"}
+            size={100}
+          />
+        </View>
+      </View>
+    </SafeAreaView>
+  );
 }
 
 const styles = StyleSheet.create({

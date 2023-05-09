@@ -6,8 +6,7 @@ import * as Notifications from "expo-notifications";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import axios from "axios";
-import { ADA_USER, ADA_KEY } from "../../env";
-import { baseURL } from "../../env";
+import { ADA_USER, ADA_KEY, baseURL } from "../../env";
 import uuid from "react-native-uuid";
 
 import init from "react_native_mqtt";
@@ -30,9 +29,13 @@ export const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [userInfo, setUserInfo] = useState({});
   const [userToken, setUserToken] = useState(null);
-  const [clientId, setclientId] = useState(null);
+  const [clientId, setclientId] = useState("");
   const [isSignout, setIsSignOut] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [homeIdGroup, setHomeIdGroup] = useState([]);
+  const [decodedVideo, setDecodedVideo] = useState("");
+  const [detectingTime, setDetectingTime] = useState(null);
+  var thiefDetectingTime = 0;
   let client = null;
 
   const [expoPushToken, setExpoPushToken] = useState("");
@@ -83,10 +86,36 @@ export const AuthProvider = ({ children }) => {
     const payload = JSON.parse(message.payloadString)["feeds"];
 
     for (const feed in payload) {
+      console.log("feed:", feed);
       let feedId = feed.match(/[a-zA-Z-]+/g)[0];
       let value = Number(payload[feed]);
       console.log(feedId, ": ", value);
-      // console.log("value type: ", typeof value);
+
+      if (feedId === "movement-sensor") {
+        var currentTime = new Date();
+        // axios
+        //   .get(`${baseURL}/api/device/${feed}`, {
+        //     headers: {
+        //       "access-token": userToken,
+        //     },
+        //   })
+        //   .then(function (response) {
+        //     console.log(response.data);
+        //     setDecodedVideo(atob(response.data));
+        //   });
+
+        console.log(currentTime.toLocaleString());
+        console.log("currentTime:", currentTime);
+        console.log("thiefDetectingTime:", thiefDetectingTime);
+        console.log("offset:", currentTime - thiefDetectingTime);
+        if (currentTime - thiefDetectingTime > 60000) {
+          bodyContent =
+            currentTime.toLocaleString() + ": Be careful of Stranger!";
+          schedulePushNotification();
+        }
+        thiefDetectingTime = currentTime;
+        setDetectingTime(thiefDetectingTime);
+      }
 
       if (screenMap[feedId].type === "Measure") {
         console.log("min: ", screenMap[feedId].min);
@@ -97,14 +126,14 @@ export const AuthProvider = ({ children }) => {
           value < screenMap[feedId].min
         ) {
           // console.warn("Too low");
-          bodyContent = `The ${screenMap[feedId].name} is too low: ${value} ${unit[feedId]}`;
+          bodyContent = `The ${screenMap[feedId].name} is too low: ${value}${unit[feedId]}`;
           schedulePushNotification();
         } else if (
           screenMap[feedId].min !== undefined &&
           value > screenMap[feedId].max
         ) {
           // console.warn("Too High...");
-          bodyContent = `The ${screenMap[feedId].name} is too high: ${value} ${unit[feedId]}`;
+          bodyContent = `The ${screenMap[feedId].name} is too high: ${value}${unit[feedId]}`;
           schedulePushNotification();
         }
       } else {
@@ -141,18 +170,22 @@ export const AuthProvider = ({ children }) => {
         await axios
           .post(`${baseURL}/login`, userData)
           .then(function (response) {
-            console.log(response.data);
+            console.log("response:", response.data);
             setUserToken(response.data["access-token"]);
             console.log("user token:", userToken);
+            setHomeIdGroup(response.data.data["home_id"]);
+            console.log("homeids:", homeIdGroup);
             setUserInfo(response.data);
-            setclientId(uuid.v4());
+            // setclientId(uuid.v4());
+            setclientId(String(Math.floor(Math.random() * 10000) + 9000));
+            console.log("CLIENT-ID:", clientId);
             if (userInfo) {
               AsyncStorage.setItem("userInfo", JSON.stringify(userInfo));
             }
             if (userToken) {
               AsyncStorage.setItem("userToken", userToken);
             }
-            if (clientId) {
+            if (clientId !== "") {
               AsyncStorage.setItem("clientId", clientId);
             }
 
@@ -167,15 +200,18 @@ export const AuthProvider = ({ children }) => {
 
             function onConnect() {
               console.log(clientId, " connected successfully...");
-              client.subscribe("thaitran24/groups/home00000");
+              for (let idx in homeIdGroup) {
+                client.subscribe(`thaitran24/groups/${homeIdGroup[idx]}`);
+              }
             }
 
             if (client === null) {
+              console.log("ci:", clientId);
               client = new Paho.MQTT.Client(
                 "io.adafruit.com",
                 443,
-                ""
-                // clientId
+                // ""
+                clientId
               );
               client.onConnectionLost = onConnectionLost;
               client.onMessageArrived = onMessageArrived;
@@ -256,6 +292,9 @@ export const AuthProvider = ({ children }) => {
     userInfo,
     isLoading,
     isSignout,
+    decodedVideo,
+    detectingTime,
+    setDetectingTime,
   };
 
   return (

@@ -20,13 +20,17 @@ export default function HomesScreen({ navigation }) {
 
   const [home, setHome] = useState([]);
 
+  // useEffect(() => {
+  //   timer;
+  // }, []);
+
   useEffect(() => {
-    timer;
+    fetchHome();
   }, []);
 
-  const timer = setTimeout(() => {
-    fetchHome();
-  }, 1500);
+  // const timer = setTimeout(() => {
+  //   fetchHome();
+  // }, 1500);
 
   const fetchHome = () => {
     axios
@@ -59,7 +63,7 @@ export default function HomesScreen({ navigation }) {
           <TouchableOpacity
             style={styles.card}
             onPress={() => {
-              clearTimeout(timer);
+              // clearTimeout(timer);
               navigation.navigate("My Home", {
                 home_id: item._id,
               });

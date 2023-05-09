@@ -24,13 +24,17 @@ export default function RoomScreen({ navigation }) {
 
   const route = useRoute();
 
+  // useEffect(() => {
+  //   timer;
+  // }, []);
+
   useEffect(() => {
-    timer;
+    fetchDevice();
   }, []);
 
-  const timer = setTimeout(() => {
-    fetchDevice();
-  }, 1500);
+  // const timer = setTimeout(() => {
+  //   fetchDevice();
+  // }, 1500);
 
   const fetchDevice = () => {
     axios
@@ -44,7 +48,8 @@ export default function RoomScreen({ navigation }) {
         setRoomInfo(
           response.data.data.filter(function (data) {
             return (
-              data.home_id == userInfo.data.home_id &&
+              // data.home_id == userInfo.data.home_id &&
+              data.home_id == route.params.home_id &&
               data.room_id == route.params.room_id &&
               data.type !== "movement-sensor"
             );
@@ -70,8 +75,10 @@ export default function RoomScreen({ navigation }) {
           <TouchableOpacity
             style={styles.card}
             onPress={() => {
-              clearTimeout(timer);
+              // clearTimeout(timer);
+              // console.log("Device_id:", item._id);
               navigation.navigate(`${screenMap[item.type].type}Device`, {
+                home_id: route.params.home_id,
                 device_id: item._id,
                 curr_value: item.curr_value,
                 type: item.type,
