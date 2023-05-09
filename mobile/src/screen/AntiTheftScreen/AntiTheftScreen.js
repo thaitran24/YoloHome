@@ -4,10 +4,12 @@ import { View, Text, StyleSheet, SafeAreaView } from "react-native";
 import { Video } from "expo-av";
 
 import { AuthContext } from "../../context/AuthProvider";
+import LightVideo from "/home/ptmsk/university/Multidisciplinary_Project/refactor/YoloHome/mobile/assets/345494089_6146328358794501_1755358773750852284_n.mp4";
 
 export default function AntiTheftScreen() {
   const { decodedVideo, detectingTime, setDetectingTime } =
     useContext(AuthContext);
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.time}>
@@ -19,18 +21,19 @@ export default function AntiTheftScreen() {
         </Text>
       </View>
       <View style={styles.videoContainer}>
-        <Video
-          source={{
-            // uri: "file:///home/ptmsk/university/Multidisciplinary_Project/refactor/YoloHome/mobile/assets/345494089_6146328358794501_1755358773750852284_n.mp4",
-            // uri: "data:video/mp4;base64," + decodedVideo,
-            uri: "https://www.learningcontainer.com/wp-content/uploads/2020/05/sample-mp4-file.mp4?_=1",
-          }}
-          style={styles.video}
-          useNativeControls
-          resizeMode="cover"
-          isLooping
-        />
-        <Text>Hello</Text>
+        {detectingTime !== null ? (
+          <Video
+            source={LightVideo}
+            style={styles.video}
+            useNativeControls
+            resizeMode="cover"
+            isLooping
+          />
+        ) : (
+          <View style={styles.nullVideo}>
+            <Text style={styles.nullText}>No Available Video</Text>
+          </View>
+        )}
       </View>
     </SafeAreaView>
   );
@@ -54,8 +57,9 @@ const styles = StyleSheet.create({
   },
   videoContainer: {
     flex: 0.75,
-    width: "100%",
-    backgroundColor: "#cccccc",
+    // width: "100%",
+    // backgroundColor: "#cccccc",
+    alignItems: "center",
   },
   video: {
     top: 0,
@@ -63,6 +67,15 @@ const styles = StyleSheet.create({
     bottom: 0,
     right: 0,
     height: 250,
-    // width: "100%",
+    width: "100%",
+  },
+  nullVideo: {
+    height: 250,
+    marginTop: "10%",
+  },
+  nullText: {
+    fontFamily: "Arial Rounded MT Bold",
+    fontSize: 30,
+    color: "#cccccc",
   },
 });

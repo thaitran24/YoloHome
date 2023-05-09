@@ -81,15 +81,14 @@ export const AuthProvider = ({ children }) => {
   }
 
   function onMessageArrived(message) {
-    console.log("onMessageArrived: " + message.payloadString);
+    // console.log("onMessageArrived: " + message.payloadString);
 
     const payload = JSON.parse(message.payloadString)["feeds"];
 
     for (const feed in payload) {
-      console.log("feed:", feed);
       let feedId = feed.match(/[a-zA-Z-]+/g)[0];
       let value = Number(payload[feed]);
-      console.log(feedId, ": ", value);
+      // console.log(feedId, ": ", value);
 
       if (feedId === "movement-sensor") {
         var currentTime = new Date();
@@ -104,10 +103,6 @@ export const AuthProvider = ({ children }) => {
         //     setDecodedVideo(atob(response.data));
         //   });
 
-        console.log(currentTime.toLocaleString());
-        console.log("currentTime:", currentTime);
-        console.log("thiefDetectingTime:", thiefDetectingTime);
-        console.log("offset:", currentTime - thiefDetectingTime);
         if (currentTime - thiefDetectingTime > 60000) {
           bodyContent =
             currentTime.toLocaleString() + ": Be careful of Stranger!";
@@ -118,8 +113,8 @@ export const AuthProvider = ({ children }) => {
       }
 
       if (screenMap[feedId].type === "Measure") {
-        console.log("min: ", screenMap[feedId].min);
-        console.log("max: ", screenMap[feedId].max);
+        // console.log("min: ", screenMap[feedId].min);
+        // console.log("max: ", screenMap[feedId].max);
 
         if (
           screenMap[feedId].min !== undefined &&
@@ -137,9 +132,7 @@ export const AuthProvider = ({ children }) => {
           schedulePushNotification();
         }
       } else {
-        console.log("Interactive devices");
-        console.log("min: ", screenMap[feedId].min);
-        console.log("max: ", screenMap[feedId].max);
+        // console.log("Interactive devices");
 
         if (
           screenMap[feedId].min !== undefined &&
@@ -170,15 +163,14 @@ export const AuthProvider = ({ children }) => {
         await axios
           .post(`${baseURL}/login`, userData)
           .then(function (response) {
-            console.log("response:", response.data);
+            // console.log("response:", response.data);
             setUserToken(response.data["access-token"]);
             console.log("user token:", userToken);
             setHomeIdGroup(response.data.data["home_id"]);
-            console.log("homeids:", homeIdGroup);
+            // console.log("homeids:", homeIdGroup);
             setUserInfo(response.data);
             // setclientId(uuid.v4());
             setclientId(String(Math.floor(Math.random() * 10000) + 9000));
-            console.log("CLIENT-ID:", clientId);
             if (userInfo) {
               AsyncStorage.setItem("userInfo", JSON.stringify(userInfo));
             }
@@ -206,7 +198,6 @@ export const AuthProvider = ({ children }) => {
             }
 
             if (client === null) {
-              console.log("ci:", clientId);
               client = new Paho.MQTT.Client(
                 "io.adafruit.com",
                 443,
