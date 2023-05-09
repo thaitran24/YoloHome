@@ -57,7 +57,6 @@ export default function MeasureDeviceScreen() {
 
     if (clientScreen === null && clientId == "") {
       setclientId(String(Math.floor(Math.random() * 2000) + 1000));
-      console.log("clientId:", clientId);
       clientScreen = new Paho.MQTT.Client("io.adafruit.com", 443, clientId);
       clientScreen.onConnectionLost = onConnectionLost;
       clientScreen.onMessageArrived = onMessageArrived;

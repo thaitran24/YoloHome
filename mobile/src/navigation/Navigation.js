@@ -15,7 +15,7 @@ export default function Navigation() {
       <NavigationContainer>
         {isLoading ? (
           <SplashScreen />
-        ) : userToken == null ? (
+        ) : userToken === null ? (
           <AuthStack />
         ) : (
           <AppStack />
