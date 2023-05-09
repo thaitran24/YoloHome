@@ -3,6 +3,7 @@ from database.document import *
 from database.error import DatabaseException
 import config
 import gridfs
+import bson
 
 
 class Database():
@@ -235,9 +236,11 @@ class Database():
             message = "Image file path not found. Check your image path again!"
             raise OperationFailed(message)
         
-        fs = gridfs.GridFS(self.database, collection="images")
+        fs = gridfs.GridFS(self.database, collection="videos")
 
-        file_id = fs.put(image_data)
+        encoded_data = bson.Binary(image_data)
+
+        file_id = fs.put(encoded_data, filename = "theft.mp4")
 
         user.add_theft(self, file_id)
 
@@ -251,7 +254,7 @@ class Database():
             message = "The faceID must be add to User entity only!"
             raise EntityException(message)
         
-        fs = gridfs.GridFS(self.database, collection="images")
+        fs = gridfs.GridFS(self.database, collection="videos")
 
         file_id = user.load_theft()
 
