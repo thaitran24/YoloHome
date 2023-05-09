@@ -77,11 +77,13 @@ class FaceDetection():
             if frame_include_face:
                 face = detected_faces[0]
                 cv2.imwrite('images/tmp.jpg', face)
-                res = self.send_data()
-                if res['user_id']:
-                    if self.open_door():
-                        break
-
+                try:
+                    res = self.send_data()
+                    if res['user_id']:
+                        if self.open_door():
+                            break
+                except:
+                    print('Cannot send request')
                 in_frame_tic = time.time()
                 frame_include_face = False
         
