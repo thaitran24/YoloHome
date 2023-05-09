@@ -1,9 +1,11 @@
 import cv2
 import time
+import dropbox
 import torch
 import datetime
 import requests
-
+import numpy as np
+import base64
 import config
 
 class HumanDetection():
@@ -15,8 +17,9 @@ class HumanDetection():
         self.frame_width = 720
         self.frame_height = 405
         self.is_warning_sent = False
-        self.start_time = 0
+        self.send_start_time = 0
         self.send_duration = 30
+        self.record_time = 4
 
     def set_stream(self):
         self.cap = cv2.VideoCapture(self.source)
@@ -44,24 +47,40 @@ class HumanDetection():
     
     def send_warning(self):
         data = {
-            'alarm': datetime.datetime.now()
+            'data': 1
         }
 
         if self.is_warning_sent:
             return
         
-        res = requests.put(
-            url="http://{}:{}/api/v1/home/{}".format(config.SERVER_HOST, config.SERVER_PORT, config.HOME_ID),
-            data=data)
+        try:
+            dbx = dropbox.Dropbox(config.DBX_TOKEN)
+            vid_file = 'images/tmp.mp4'
+            with open(vid_file, "rb") as f:
+                meta = dbx.files_upload(f.read(), '/Videos/tmp.mp4', mode=dropbox.files.WriteMode("overwrite"))
+        except Exception as err:
+            print('Cannot push video: ', err)
+
+        try:
+            res = requests.put(
+                url="http://{}:{}/api/gateway/device/{}".format(config.SERVER_HOST, config.SERVER_PORT, config.WARNING_ID),
+                data=data)
+        except Exception as err:
+            print('Cannot send request: ', err)
+        
         self.is_warning_sent = True
-        self.start_time = time.time()
+        self.send_start_time = time.time()
         
         return res.json()
 
     def run(self):
         self.set_stream()
+        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+        out = cv2.VideoWriter('images/{}.mp4'.format('tmp'), fourcc, 15.0, (self.frame_width, self.frame_height))
+        human_detected = False
         while (True):
             ret, frame = self.cap.read()
+
             if not ret:
                 break
 
@@ -70,17 +89,27 @@ class HumanDetection():
             results = self.model(frame)
             labels, coords = self.get_labels_coords(results)
 
-            if not self.check_human(labels):
-                cv2.imshow('video', frame)
-                continue
-
             frame = self.plot_bboxes(frame, coords)
             cv2.imshow('video', frame)
 
-            res = self.send_warning()
+            if self.check_human(labels):
+                if not human_detected:
+                    start_time = time.time()
+                    human_detected = True
+
+            if human_detected:
+                end_time = time.time()
+                if end_time - start_time < self.record_time:
+                    stack = np.hstack([frame])
+                    out.write(stack)
+                else:
+                    res = self.send_warning()
+            
             curr = time.time()
-            if curr - self.start_time > self.send_duration:
+
+            if curr - self.send_start_time > self.send_duration and self.is_warning_sent:
                 self.is_warning_sent = False
+                human_detected = False
 
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
@@ -88,8 +117,6 @@ class HumanDetection():
         self.cap.release()
         cv2.destroyAllWindows()
 
-
 if __name__=='__main__':
     human_detection = HumanDetection('images/hd_demo.mp4')
-    # human_detection = HumanDetection(0)
     human_detection.run()

@@ -6,7 +6,7 @@ import playsound
 import speech_recognition as sr
 from gtts import gTTS
 
-class VoiceAssistant():
+class VoiceRecognizer():
     def __init__(self):
         self.recognizer = sr.Recognizer()
         self.command_duration = 30
@@ -86,5 +86,5 @@ class VoiceAssistant():
                 self.take_command()
 
 if __name__=='__main__':
-    assistant = VoiceAssistant()
+    assistant = VoiceRecognizer()
     assistant.run()
