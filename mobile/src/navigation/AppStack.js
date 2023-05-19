@@ -36,7 +36,7 @@ export default function AppStack() {
         })}
       />
       <Tab.Screen
-        name="Statics"
+        name="Stats"
         component={StaticsScreen}
         options={({ route }) => ({
           tabBarIcon: ({ color, size }) => (
