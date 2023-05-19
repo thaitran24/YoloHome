@@ -4,7 +4,7 @@ import { View, Text, StyleSheet, SafeAreaView } from "react-native";
 import { Video } from "expo-av";
 
 import { AuthContext } from "../../context/AuthProvider";
-import LightVideo from "/home/ptmsk/university/Multidisciplinary_Project/refactor/YoloHome/mobile/assets/345494089_6146328358794501_1755358773750852284_n.mp4";
+import LightVideo from "/home/xuan/BKU/Third Year - 22/Second Term/Project/mobile/YoloHome/mobile/assets/345494089_6146328358794501_1755358773750852284_n.mp4";
 
 export default function AntiTheftScreen() {
   const { decodedVideo, detectingTime, setDetectingTime } =

@@ -4,7 +4,7 @@ import { View, Text, StyleSheet } from "react-native";
 export default function StaticsScreen() {
   return (
     <View style={styles.container}>
-      <Text>This is Statics Screen</Text>
+      <Text>This is Statics Screens</Text>
     </View>
   );
 }

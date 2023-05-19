@@ -27,6 +27,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-native": "0.71.6",
+    "react-native-chart-kit": "^6.12.0",
     "react-native-background-actions": "^3.0.0",
     "react-native-dropbox-sdk": "^0.4.0",
     "react-native-really-awesome-button": "^2.0.4",
